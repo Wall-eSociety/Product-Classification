@@ -61,7 +61,10 @@ clf = clf.fit(X, Y)
 clf.feature_importances_
 ```
 
-## Verificando a acurácia
+## Verificando a acurácia com os dados de treinamento
+
+Utilizando os dados que foram utilizados parar treinar o algoritmo como entrada
+para predição nos dá noção se o modelo pode estar viciado.
 
 ```{.python .input}
 clf.score(X,Y)
@@ -69,7 +72,28 @@ clf.score(X,Y)
 
 ## Verificando com Cross Validation
 
+Cross validation irá predizer um pedaço do dataset utilizando o modelo treinado
+com o resto dos dados que não fazem parte deste dataset.
+
 ```{.python .input}
-scores = cross_val_score(clf, X, Y)
-scores.mean()   
+rfscores = cross_val_score(clf, X, Y)
+print (rfscores.mean() * 100, end='')
+print ("%") 
+```
+
+## ExtraTrees
+
+O [Scikit Learn](http://scikit-
+learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html)
+nos apresenta um tipo diferente de random forest que pode apresentar resultados
+melhores que o [RandomForestClassifier](http://scikit-
+learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
+
+```{.python .input}
+from sklearn.ensemble import ExtraTreesClassifier
+
+etc = ExtraTreesClassifier();
+etscores = cross_val_score(clf, X, Y)
+print (etscores.mean() * 100, end='')
+print ("%")
 ```
