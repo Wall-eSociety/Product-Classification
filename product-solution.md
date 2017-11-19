@@ -63,3 +63,31 @@ para avaliar se há alguma correlação linear crescente ou decrescente entre as
 variáveis, pois esta relação nos possibilita remover uma delas sem prejuizos aos
 modelos de machine learn
 
+```python
+shape = (df_train.shape[1], df_train.shape[1])
+upper_matrix = np.tril(np.ones(shape)).astype(np.bool)
+np.fill_diagonal(upper_matrix, False)
+correlation = df_train.corr('pearson').abs().where(upper_matrix)
+correlation
+```
+
+## Filtrando colunas
+
+A partir da matriz de correlação assima, buscamos agora
+identificar quais das colunas possuem uma forte correlação de acordo com a
+tabela a seguir.
+Como sugerido por [Makuka,
+2012](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3576830/)
+<center>Interpretação do resultado de correlação </center>
+  
+|Valor
+absoluto|Significado|
+|---|---|
+|0.9 < v | Muito forte |
+|0.7 < v <= 0.9 | Forte
+|
+|0.5 < v <= 0.7 | Moderada |
+|0.3 < v <= 0.5 | Fraca |
+|0.0 < v <= 0.3 |
+Desprezível |
+
