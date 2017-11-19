@@ -84,10 +84,43 @@ Como sugerido por [Makuka,
 absoluto|Significado|
 |---|---|
 |0.9 < v | Muito forte |
-|0.7 < v <= 0.9 | Forte
-|
+|0.7 < v <= 0.9 | Forte |
 |0.5 < v <= 0.7 | Moderada |
 |0.3 < v <= 0.5 | Fraca |
-|0.0 < v <= 0.3 |
-Desprezível |
+|0.0 < v <= 0.3 | Desprezível |
 
+```python
+strong_correlation = correlation.where(correlation > 0.8)
+strong_correlation = strong_correlation.dropna(how='all', axis=(0,1))
+corr_features = strong_correlation[strong_correlation.notnull()].stack().index
+corr_features_size = len(corr_features)
+if corr_features_size:
+    col = math.floor(math.log2(corr_features_size)) or 1
+    row = math.ceil(corr_features_size/col) 
+    figure, axis = plt.subplots(row, col, figsize=[15,2*row])
+    figure.tight_layout()
+    for idx, (feature1, feature2) in enumerate(corr_features):
+        if row == 1: # Has a single element
+            plot = axis.scatter(df_train[feature1],df_train[feature2])
+            plot = axis.set_xlabel(feature1)
+            plot = axis.set_ylabel(feature2)
+            plot = axis.annotate(strong_correlation[feature2][feature1],xy=(0,0))
+        elif col == 1: # Has multiples elements, but is a array
+            plot = axis[idx].scatter(df_train[feature1], df_train[feature2])
+            plot = axis[idx].set_xlabel(feature1)
+            plot = axis[idx].set_ylabel(feature2)
+            plot = axis[idx].annotate(strong_correlation[feature2][feature1],xy=(0,0))
+        else: # Multitle elements and is a matrix
+            plot = axis[int(idx/col), idx%col].scatter(df_train[feature1], df_train[feature2])
+            plot = axis[int(idx/col), idx%col].set_xlabel(feature1)
+            plot = axis[int(idx/col), idx%col].set_ylabel(feature2)
+            plot = axis[int(idx/col), idx%col].annotate(strong_correlation[feature2][feature1],xy=(0,0))
+    plt.show()
+```
+
+## Resultado
+
+A correlação mostra que não há uma fortíssima correlação entre as
+features, entretanto, há 10 colunas que estão fortemente correlacionadas. Porem
+buscamos uma correlação fortíssima para não remover features com comportamentos
+diferentes.
