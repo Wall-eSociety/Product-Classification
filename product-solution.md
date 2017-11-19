@@ -48,11 +48,13 @@ entre elas, entretanto, como são um total de 93 features, dificulta visualizar 
 correlação em forma gráfica.
 
 A correlação de
-[Pearson](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de%0A_Pearson)
+[Pearson](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de%0
+A_Pearson)
 mede o grau da correlação (e a direcção dessa correlação - se positiva ou
 negativa) entre duas variáveis de escala métrica (intervalar ou de rácio/razão).
 Já a correlação de
-[Spearman](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de_postos_de_Spearman)
+[Spearman](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de_
+postos_de_Spearman)
 entre duas variáveis é igual à correlação de Pearson entre os valores de postos
 daquelas duas variáveis. Enquanto a correlação de Pearson avalia relações
 lineares, a correlação de Spearman avalia relações monótonas, sejam elas
@@ -118,33 +120,46 @@ if corr_features_size:
     plt.show()
 ```
 
-```python
-X_train = df_train.iloc[:, :-1]
-y_train = df_train.iloc[:, -1]
-```
-
-# Dummy model
-
-Dummy Classifier é um modelo que faz predições usando regras simples.
-
-O modelo dummy classifier é importante para termos como parâmetro de comparação
-com outros modelos.
-
-```python
-from sklearn.dummy import DummyClassifier
-
-clf = DummyClassifier(strategy='most_frequent',random_state=0)
-clf.fit(X_train, y_train)
-
-print('Dummy Score: %.4f' % clf.score(X_train, y_train))
-```
-
-# Referências Bibliográficas
-http://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.h
-tml#sklearn.dummy.DummyClassifier
 ## Resultado
 
 A correlação mostra que não há uma fortíssima correlação entre as
 features, entretanto, há 10 colunas que estão fortemente correlacionadas. Porem
 buscamos uma correlação fortíssima para não remover features com comportamentos
 diferentes.
+
+```python
+X_train = df_train
+y_train = df_target.iloc[:, 0]
+
+X_train.head()
+y_train.head()
+```
+
+# Modelo Dummy Classifier
+
+Dummy Classifier é um modelo que faz predições usando regras simples.
+
+O dummy é importante para termos como parâmetro de comparação
+com outros modelos.
+
+```python
+from sklearn.dummy import DummyClassifier
+
+# Most Frequent: always predicts the most frequent label in the training set.
+mf_clf = DummyClassifier(strategy='most_frequent')
+mf_clf.fit(X_train, y_train)
+
+# Stratified: generates predictions by respecting the training set’s class distribution.
+sf_clf = DummyClassifier(strategy='stratified')
+sf_clf.fit(X_train, y_train)
+
+mf_score = mf_clf.score(X_train, y_train)
+sf_score = sf_clf.score(X_train, y_train)
+
+print('Most Frequent Dummy Score: %.4f' % mf_score)
+print('Stratified Dummy Score: %.4f' % sf_score)
+```
+
+# Referências Bibliográficas
+http://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.h
+tml#sklearn.dummy.DummyClassifier
