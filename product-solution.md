@@ -97,3 +97,24 @@ etscores = cross_val_score(clf, X, Y)
 print (etscores.mean() * 100, end='')
 print ("%")
 ```
+<<<<<<< Updated upstream
+=======
+
+## Boosting Trees
+
+Este algorítmo demora demais para rodar, descomente se tiver a paciencia de
+esperar.
+Estimativa: 10 min com I7 3.1  8Ram
+
+```{.python .input}
+#from sklearn.ensemble import GradientBoostingClassifier
+
+#gbc = GradientBoostingClassifier();
+#gbcscores = cross_val_score(gbc, X, Y)
+```
+
+```{.python .input}
+#print (gbcscores.mean() * 100, end='')
+#print ("%")
+```
+>>>>>>> Stashed changes
