@@ -1,4 +1,4 @@
-```python
+```{.python .input}
 # Configure to show multiples outputs from a single cell
 from IPython.core.interactiveshell import InteractiveShell
 InteractiveShell.ast_node_interactivity = "all"
@@ -10,13 +10,13 @@ import numpy as np
 import math
 ```
 
-```python
+```{.python .input}
 
 with zipfile.ZipFile('Datasets.zip') as ziped_file:
     with ziped_file.open('Datasets/train.csv') as train_file:
-        df_train = pd.read_csv(train_file, header=0).set_index('id')
+        df_train = pd.read_csv(train_file, header=0)
     with ziped_file.open('Datasets/test.csv') as test_file:
-        df_test = pd.read_csv(test_file, header=0).set_index('id')
+        df_test = pd.read_csv(test_file, header=0)
 df_target = pd.DataFrame(df_train.pop('target')) # Get the target
 df_target.head() # Show target classes
 df_train.head() # The train dataset
@@ -48,11 +48,13 @@ entre elas, entretanto, como são um total de 93 features, dificulta visualizar 
 correlação em forma gráfica.
 
 A correlação de
-[Pearson](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de%0A_Pearson)
+[Pearson](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de%0
+A_Pearson)
 mede o grau da correlação (e a direcção dessa correlação - se positiva ou
 negativa) entre duas variáveis de escala métrica (intervalar ou de rácio/razão).
 Já a correlação de
-[Spearman](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de_postos_de_Spearman)
+[Spearman](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de_
+postos_de_Spearman)
 entre duas variáveis é igual à correlação de Pearson entre os valores de postos
 daquelas duas variáveis. Enquanto a correlação de Pearson avalia relações
 lineares, a correlação de Spearman avalia relações monótonas, sejam elas
@@ -63,7 +65,7 @@ para avaliar se há alguma correlação linear crescente ou decrescente entre as
 variáveis, pois esta relação nos possibilita remover uma delas sem prejuizos aos
 modelos de machine learn
 
-```python
+```{.python .input}
 shape = (df_train.shape[1], df_train.shape[1])
 upper_matrix = np.tril(np.ones(shape)).astype(np.bool)
 np.fill_diagonal(upper_matrix, False)
@@ -79,7 +81,7 @@ tabela a seguir.
 Como sugerido por [Makuka,
 2012](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3576830/)
 <center>Interpretação do resultado de correlação </center>
-  
+
 |Valor
 absoluto|Significado|
 |---|---|
@@ -89,14 +91,14 @@ absoluto|Significado|
 |0.3 < v <= 0.5 | Fraca |
 |0.0 < v <= 0.3 | Desprezível |
 
-```python
+```{.python .input}
 strong_correlation = correlation.where(correlation > 0.8)
 strong_correlation = strong_correlation.dropna(how='all', axis=(0,1))
 corr_features = strong_correlation[strong_correlation.notnull()].stack().index
 corr_features_size = len(corr_features)
 if corr_features_size:
     col = math.floor(math.log2(corr_features_size)) or 1
-    row = math.ceil(corr_features_size/col) 
+    row = math.ceil(corr_features_size/col)
     figure, axis = plt.subplots(row, col, figsize=[15,2*row])
     figure.tight_layout()
     for idx, (feature1, feature2) in enumerate(corr_features):
@@ -124,3 +126,98 @@ A correlação mostra que não há uma fortíssima correlação entre as
 features, entretanto, há 10 colunas que estão fortemente correlacionadas. Porem
 buscamos uma correlação fortíssima para não remover features com comportamentos
 diferentes.
+
+# Random Forest
+
+Breiman breiman, 2001, descreve Random Forests como uma evolução das decisions
+trees, onde várias ávores são formadas para criar um modelo com maior precisão.
+Isto é feito a partir da separação dos Dados em conjutos
+de dados menores e aleatórios. Cada árvore é contruida a partir de um pedaço
+aleatório dos dados. Quando um novo dado chega, a predição é feita por todas as
+Árvores e ao fim é feita uma
+votação por maioria, ou seja, a categoria com mais votos ganha e o resultado é
+dado.
+
+![Workflow Random forest](forest.jpg)
+
+De acordo com breiman, 2001, as RFs corrigem a maior parte dos problemas de
+Overfitting que as Árvores de decisão apresentam. Tudo depende do quanto as DT
+contidas dentro da Random Forest. Isto é, o quanto elas representam os dados.
+
+Referências:
+
+[BREIMAN](https://www.stat.berkeley.edu/users/breiman/randomforest2001.pdf),
+Leo. Random forests. Machine learning, v. 45, n. 1, p. 5-32, 2001.
+
+## Utilizando o algoritmo
+
+```{.python .input}
+from sklearn.model_selection import cross_val_score
+from sklearn.ensemble import RandomForestClassifier
+y = df_target.iloc[:,-1]
+clf = RandomForestClassifier(n_estimators=10)
+clf = clf.fit(df_train, y)
+
+```
+
+## Importancia das features para a RF
+
+```{.python .input}
+clf.feature_importances_
+```
+
+## Verificando a acurácia com os dados de treinamento
+
+Utilizando os dados que foram utilizados parar treinar o algoritmo como entrada
+para predição nos dá noção se o modelo pode estar viciado.
+
+```{.python .input}
+print (clf.score(df_train, y) * 100, end='')
+print ("% de precisão")
+```
+
+## Verificando com Cross Validation
+
+Cross validation irá predizer um pedaço do dataset utilizando o modelo treinado
+com o resto dos dados que não fazem parte deste dataset.
+
+```{.python .input}
+rfscores = cross_val_score(clf, df_train, y)
+print (rfscores.mean() * 100, end='')
+print ("% de precisão")
+```
+
+## ExtraTrees
+
+O [Scikit Learn](http://scikit-
+learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html)
+nos apresenta um tipo diferente de random forest que pode apresentar resultados
+melhores que o [RandomForestClassifier](http://scikit-
+learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
+
+```{.python .input}
+from sklearn.ensemble import ExtraTreesClassifier
+
+etc = ExtraTreesClassifier();
+etscores = cross_val_score(clf, df_train, y)
+print (etscores.mean() * 100, end='')
+print ("% de precisão")
+```
+
+## Boosting Trees
+
+Este algorítmo demora demais para rodar, descomente se tiver a paciencia de
+esperar.
+Estimativa: 10 min com I7 3.1  8Ram
+
+```{.python .input}
+#from sklearn.ensemble import GradientBoostingClassifier
+
+#gbc = GradientBoostingClassifier();
+#gbcscores = cross_val_score(gbc, df_train, y)
+```
+
+```{.python .input}
+#print (gbcscores.mean() * 100, end='')
+#print ("%")
+```
