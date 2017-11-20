@@ -14,9 +14,9 @@ import math
 
 with zipfile.ZipFile('Datasets.zip') as ziped_file:
     with ziped_file.open('Datasets/train.csv') as train_file:
-        df_train = pd.read_csv(train_file, header=0).set_index('id')
+        df_train = pd.read_csv(train_file, header=0)
     with ziped_file.open('Datasets/test.csv') as test_file:
-        df_test = pd.read_csv(test_file, header=0).set_index('id')
+        df_test = pd.read_csv(test_file, header=0)
 df_target = pd.DataFrame(df_train.pop('target')) # Get the target
 df_target.head() # Show target classes
 df_train.head() # The train dataset
@@ -160,6 +160,102 @@ print('Most Frequent Dummy Score: %.4f' % mf_score)
 print('Stratified Dummy Score: %.4f' % sf_score)
 ```
 
+# Random Forest
+
+Breiman breiman, 2001, descreve Random Forests como uma evolução das decisions
+trees, onde várias ávores são formadas para criar um modelo com maior precisão.
+Isto é feito a partir da separação dos Dados em conjutos
+de dados menores e aleatórios. Cada árvore é contruida a partir de um pedaço
+aleatório dos dados. Quando um novo dado chega, a predição é feita por todas as
+Árvores e ao fim é feita uma
+votação por maioria, ou seja, a categoria com mais votos ganha e o resultado é
+dado.
+
+![Workflow Random forest](forest.jpg)
+
+De acordo com breiman, 2001, as RFs corrigem a maior parte dos problemas de
+Overfitting que as Árvores de decisão apresentam. Tudo depende do quanto as DT
+contidas dentro da Random Forest. Isto é, o quanto elas representam os dados.
+
+Referências:
+
+[BREIMAN](https://www.stat.berkeley.edu/users/breiman/randomforest2001.pdf),
+Leo. Random forests. Machine learning, v. 45, n. 1, p. 5-32, 2001.
+
+## Utilizando o algoritmo
+
+```python
+from sklearn.model_selection import cross_val_score
+from sklearn.ensemble import RandomForestClassifier
+y = df_target.iloc[:,-1]
+clf = RandomForestClassifier(n_estimators=10)
+clf = clf.fit(df_train, y)
+
+```
+
+## Importancia das features para a RF
+
+```python
+clf.feature_importances_
+```
+
+## Verificando a acurácia com os dados de treinamento
+
+Utilizando os dados que foram utilizados parar treinar o algoritmo como entrada
+para predição nos dá noção se o modelo pode estar viciado.
+
+```python
+print (clf.score(df_train, y) * 100, end='')
+print ("% de precisão")
+```
+
+## Verificando com Cross Validation
+
+Cross validation irá predizer um pedaço do dataset utilizando o modelo treinado
+com o resto dos dados que não fazem parte deste dataset.
+
+```python
+rfscores = cross_val_score(clf, df_train, y)
+print (rfscores.mean() * 100, end='')
+print ("% de precisão")
+```
+
+## ExtraTrees
+
+O [Scikit Learn](http://scikit-
+learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html)
+nos apresenta um tipo diferente de random forest que pode apresentar resultados
+melhores que o [RandomForestClassifier](http://scikit-
+learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
+
+```python
+from sklearn.ensemble import ExtraTreesClassifier
+
+etc = ExtraTreesClassifier();
+etscores = cross_val_score(clf, df_train, y)
+print (etscores.mean() * 100, end='')
+print ("% de precisão")
+```
+
+## Boosting Trees
+
+Este algorítmo demora demais para rodar, descomente se tiver a paciencia de
+esperar.
+Estimativa: 10 min com I7 3.1  8Ram
+
+```python
+#from sklearn.ensemble import GradientBoostingClassifier
+
+#gbc = GradientBoostingClassifier();
+#gbcscores = cross_val_score(gbc, df_train, y)
+```
+
+```python
+#print (gbcscores.mean() * 100, end='')
+#print ("%")
+```
+
 # Referências Bibliográficas
 http://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.h
 tml#sklearn.dummy.DummyClassifier
+
