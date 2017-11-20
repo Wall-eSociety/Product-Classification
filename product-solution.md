@@ -127,15 +127,43 @@ features, entretanto, há 10 colunas que estão fortemente correlacionadas. Pore
 buscamos uma correlação fortíssima para não remover features com comportamentos
 diferentes.
 
-```python
-X_train = df_train
-y_train = df_target.iloc[:, 0]
+## Train/Test split
 
-X_train.head()
-y_train.head()
+Utilizaremos 80% da base de treino para efetivamente treinar o modelo e 20% para
+averiguar a performance do modelo.
+
+```python
+from sklearn.model_selection import train_test_split
+
+X = df_train.iloc[:, :].values
+y = df_target.iloc[:, 0].values
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 ```
 
-# Modelo Dummy Classifier
+## XGBoost
+
+```python
+%%time
+from xgboost import XGBClassifier
+
+classifier = XGBClassifier()
+classifier.fit(X_train, y_train)
+
+y_pred = classifier.predict(X_test)
+
+from sklearn.metrics import confusion_matrix
+cm = confusion_matrix(y_test, y_pred)
+
+from sklearn.model_selection import cross_val_score
+accuracies = cross_val_score(estimator=classifier, X=X_train, y=y_train, cv=10)
+accuracies.mean()
+accuracies.std()
+
+print(cm)
+```
+
+## Modelo Dummy Classifier
 
 Dummy Classifier é um modelo que faz predições usando regras simples.
 
@@ -144,20 +172,25 @@ com outros modelos.
 
 ```python
 from sklearn.dummy import DummyClassifier
+from sklearn.metrics import confusion_matrix
 
-# Most Frequent: always predicts the most frequent label in the training set.
-mf_clf = DummyClassifier(strategy='most_frequent')
-mf_clf.fit(X_train, y_train)
+models = ['most_frequent', 'stratified']
 
-# Stratified: generates predictions by respecting the training set’s class distribution.
-sf_clf = DummyClassifier(strategy='stratified')
-sf_clf.fit(X_train, y_train)
-
-mf_score = mf_clf.score(X_train, y_train)
-sf_score = sf_clf.score(X_train, y_train)
-
-print('Most Frequent Dummy Score: %.4f' % mf_score)
-print('Stratified Dummy Score: %.4f' % sf_score)
+for model in models:
+    clf = DummyClassifier(strategy=model)
+    clf.fit(X_train, y_train)
+    score = clf.score(X_train, y_train)
+    y_pred = clf.predict(X_test)
+    cm = confusion_matrix(y_test, y_pred)
+    
+    # K Fold validation
+    accuracies = cross_val_score(estimator=clf, X=X_train, y=y_train, cv=10)
+    print('Média: %.2f' % accuracies.mean())
+    print('Desvio padrão: %.4f' % accuracies.std())
+    
+    # Matriz de confusao
+    print('Matriz de confusao de', model, '\n', cm)
+    print(model, 'score: %.2f' % score)
 ```
 
 # Random Forest
@@ -258,4 +291,3 @@ Estimativa: 10 min com I7 3.1  8Ram
 # Referências Bibliográficas
 http://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.h
 tml#sklearn.dummy.DummyClassifier
-
