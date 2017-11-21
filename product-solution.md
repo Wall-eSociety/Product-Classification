@@ -14,10 +14,12 @@ import math
 
 with zipfile.ZipFile('Datasets.zip') as ziped_file:
     with ziped_file.open('Datasets/train.csv') as train_file:
-        df_train = pd.read_csv(train_file, header=0)
+        df_train = pd.read_csv(train_file, header=0).set_index('id')
     with ziped_file.open('Datasets/test.csv') as test_file:
-        df_test = pd.read_csv(test_file, header=0)
+        df_test = pd.read_csv(test_file, header=0).set_index('id')
 df_target = pd.DataFrame(df_train.pop('target')) # Get the target
+df_target.target = pd.Categorical(df_target.target) # Transform target in Categorical type
+df_target['categories'] = df_target.target.cat.codes # Add the codes in a columns
 df_target.head() # Show target classes
 df_train.head() # The train dataset
 df_test.head() # It hasn't target
@@ -50,19 +52,27 @@ correlação em forma gráfica.
 A correlação de
 [Pearson](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de%0
 A_Pearson)
-mede o grau da correlação (e a direcção dessa correlação - se positiva ou
-negativa) entre duas variáveis de escala métrica (intervalar ou de rácio/razão).
+mede o grau da correlação (e a direcção dessa correlação - se
+positiva ou
+negativa) entre duas variáveis de escala métrica (intervalar ou de
+rácio/razão).
 Já a correlação de
 [Spearman](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de_
 postos_de_Spearman)
-entre duas variáveis é igual à correlação de Pearson entre os valores de postos
-daquelas duas variáveis. Enquanto a correlação de Pearson avalia relações
-lineares, a correlação de Spearman avalia relações monótonas, sejam elas
+entre duas variáveis é igual à correlação de Pearson entre
+os valores de postos
+daquelas duas variáveis. Enquanto a correlação de Pearson
+avalia relações
+lineares, a correlação de Spearman avalia relações monótonas,
+sejam elas
 lineares ou não.
 
-Visto ambos os tipos de correlação, utilizaremos a de Pearson
-para avaliar se há alguma correlação linear crescente ou decrescente entre as
-variáveis, pois esta relação nos possibilita remover uma delas sem prejuizos aos
+Visto ambos os tipos de correlação, utilizaremos a
+de Pearson
+para avaliar se há alguma correlação linear crescente ou decrescente
+entre as
+variáveis, pois esta relação nos possibilita remover uma delas sem
+prejuizos aos
 modelos de machine learn
 
 ```python
@@ -86,10 +96,12 @@ Como sugerido por [Makuka,
 absoluto|Significado|
 |---|---|
 |0.9 < v | Muito forte |
-|0.7 < v <= 0.9 | Forte |
+|0.7 < v <= 0.9 | Forte
+|
 |0.5 < v <= 0.7 | Moderada |
 |0.3 < v <= 0.5 | Fraca |
-|0.0 < v <= 0.3 | Desprezível |
+|0.0 < v <= 0.3 |
+Desprezível |
 
 ```python
 strong_correlation = correlation.where(correlation > 0.8)
@@ -128,16 +140,17 @@ buscamos uma correlação fortíssima para não remover features com comportamen
 diferentes.
 
 ```python
-X_train = df_train
-y_train = df_target.iloc[:, 0]
+x_train = df_train
+y_train = df_target.target
 
-X_train.head()
+x_train.head()
 y_train.head()
 ```
 
 # Modelo Dummy Classifier
 
-Dummy Classifier é um modelo que faz predições usando regras simples.
+Dummy Classifier é um modelo que faz predições usando
+regras simples.
 
 O dummy é importante para termos como parâmetro de comparação
 com outros modelos.
@@ -147,49 +160,129 @@ from sklearn.dummy import DummyClassifier
 
 # Most Frequent: always predicts the most frequent label in the training set.
 mf_clf = DummyClassifier(strategy='most_frequent')
-mf_clf.fit(X_train, y_train)
+mf_clf.fit(x_train, y_train)
 
 # Stratified: generates predictions by respecting the training set’s class distribution.
 sf_clf = DummyClassifier(strategy='stratified')
-sf_clf.fit(X_train, y_train)
+sf_clf.fit(x_train, y_train)
 
-mf_score = mf_clf.score(X_train, y_train)
-sf_score = sf_clf.score(X_train, y_train)
+mf_score = mf_clf.score(x_train, y_train)
+sf_score = sf_clf.score(x_train, y_train)
 
 print('Most Frequent Dummy Score: %.4f' % mf_score)
 print('Stratified Dummy Score: %.4f' % sf_score)
 ```
 
-# Random Forest
+# Decision Tree
 
-Breiman breiman, 2001, descreve Random Forests como uma evolução das decisions
-trees, onde várias ávores são formadas para criar um modelo com maior precisão.
-Isto é feito a partir da separação dos Dados em conjutos
-de dados menores e aleatórios. Cada árvore é contruida a partir de um pedaço
-aleatório dos dados. Quando um novo dado chega, a predição é feita por todas as
-Árvores e ao fim é feita uma
-votação por maioria, ou seja, a categoria com mais votos ganha e o resultado é
-dado.
-
-![Workflow Random forest](forest.jpg)
-
-De acordo com breiman, 2001, as RFs corrigem a maior parte dos problemas de
-Overfitting que as Árvores de decisão apresentam. Tudo depende do quanto as DT
-contidas dentro da Random Forest. Isto é, o quanto elas representam os dados.
-
-Referências:
-
-[BREIMAN](https://www.stat.berkeley.edu/users/breiman/randomforest2001.pdf),
-Leo. Random forests. Machine learning, v. 45, n. 1, p. 5-32, 2001.
-
-## Utilizando o algoritmo
+# Adicionar descrição de como funciona!!!!
 
 ```python
 from sklearn.model_selection import cross_val_score
+from sklearn import tree
+def fit_tree(X, Y):
+    tree_classifier = tree.DecisionTreeClassifier()
+    tree_classifier.fit(X, Y)
+    inner_score = tree_classifier.score(X, Y)
+    tree_classifier = tree.DecisionTreeClassifier()
+    tree_fit = cross_val_score(tree_classifier, X, Y)
+    return inner_score, tree_fit.mean(), tree_fit.std()
+
+"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(x_train, y_train))
+
+```
+
+## Distribuição dos dados
+
+Um dos modelos a ser utilizado será o decision tree
+no método de montagem random forest. Este modelo de predição possui um problema
+de viés quando uma das classes na base de treino é mais predominante do que
+outra, ou seja, a distribuição das classes na base de treino devem ser
+semelhantes para evitar problemas de
+[overfiting](http://docs.aws.amazon.com/machine-learning/latest/dg/model-fit-
+underfitting-vs-overfitting.html).
+
+Para tanto, precisa-se descobrir qual a
+contagem de cada classe disponível na base de treino, montaremos um histograma
+para verificar a diferença entre elas.
+
+```python
+counts = [0] *len(df_target.target.cat.categories)
+
+def reduce(target):
+    counts[target.categories] += 1
+    return counts[target.categories]
+
+df_target['increase_count'] = df_target.apply(reduce, axis=1)
+df_target.groupby('target').count()
+df_target.groupby('target')['increase_count'].max().sum() == df_target.target.count()
+```
+
+### Filtrar dados
+
+Agora, iremos filtrar os dados deixando apenas os primeiros
+registros. O critério de filtrar os dados será pegar a classe que possue o menor
+número e utilizar ele como base para remover os demais, considerando um tamanho
+máximo de até 2x o da menor classe
+
+```python
+distance_percent = 2
+minimum_value = df_target.groupby('target')['increase_count'].max().min()
+df_rtarget = df_target[ df_target.increase_count < minimum_value*distance_percent ]
+df_rtarget.groupby('target').count()
+df_rtrain = df_train.drop( df_target[df_target.increase_count >= minimum_value * distance_percent].index )
+df_rtrain.shape[0] == df_rtarget.shape[0]
+```
+
+### Verificando resultado
+
+Após aplicar uma melhor distribuição nos dados,
+rodou-se novamene o algorítmo da decision tree e percebeu-se que a acurácia do
+modelo diminuiu, e portanto, não será utilizado.
+
+```python
+"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(df_rtrain, df_rtarget.target))
+
+```
+
+# Random Forest
+
+Breiman breiman, 2001, descreve Random Forests como uma
+evolução das decisions
+trees, onde várias ávores são formadas para criar um
+modelo com maior precisão.
+Isto é feito a partir da separação dos Dados em
+conjutos
+de dados menores e aleatórios. Cada árvore é contruida a partir de um
+pedaço
+aleatório dos dados. Quando um novo dado chega, a predição é feita por
+todas as
+Árvores e ao fim é feita uma
+votação por maioria, ou seja, a categoria
+com mais votos ganha e o resultado é
+dado.
+
+![Workflow Random
+forest](forest.jpg)
+
+De acordo com breiman, 2001, as RFs corrigem a maior parte
+dos problemas de
+Overfitting que as Árvores de decisão apresentam. Tudo depende
+do quanto as DT
+contidas dentro da Random Forest. Isto é, o quanto elas
+representam os dados.
+
+Referências:
+[BREIMAN](https://www.stat.berkeley.edu/users/breiman/randomforest2001.pdf),
+Leo. Random forests. Machine learning, v. 45, n. 1, p. 5-32, 2001.
+
+##
+Utilizando o algoritmo
+
+```python
 from sklearn.ensemble import RandomForestClassifier
-y = df_target.iloc[:,-1]
 clf = RandomForestClassifier(n_estimators=10)
-clf = clf.fit(df_train, y)
+clf = clf.fit(x_train, y_train)
 
 ```
 
@@ -201,23 +294,27 @@ clf.feature_importances_
 
 ## Verificando a acurácia com os dados de treinamento
 
-Utilizando os dados que foram utilizados parar treinar o algoritmo como entrada
-para predição nos dá noção se o modelo pode estar viciado.
+Utilizando os dados que
+foram utilizados parar treinar o algoritmo como entrada
+para predição nos dá
+noção se o modelo pode estar viciado.
 
 ```python
-print (clf.score(df_train, y) * 100, end='')
+print (clf.score(x_train, y_train) * 100, end='')
 print ("% de precisão")
 ```
 
 ## Verificando com Cross Validation
 
-Cross validation irá predizer um pedaço do dataset utilizando o modelo treinado
-com o resto dos dados que não fazem parte deste dataset.
+Cross validation irá predizer um pedaço do
+dataset utilizando o modelo treinado
+com o resto dos dados que não fazem parte
+deste dataset.
 
 ```python
-rfscores = cross_val_score(clf, df_train, y)
-print (rfscores.mean() * 100, end='')
-print ("% de precisão")
+rfscores = cross_val_score(clf, x_train, y_train)
+print ("{} de precisão".format(rfscores.mean() * 100, end=''))
+
 ```
 
 ## ExtraTrees
@@ -232,14 +329,16 @@ learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
 from sklearn.ensemble import ExtraTreesClassifier
 
 etc = ExtraTreesClassifier();
-etscores = cross_val_score(clf, df_train, y)
-print (etscores.mean() * 100, end='')
-print ("% de precisão")
+etscores = cross_val_score(clf, x_train, y_train)
+extra_tree_fit = etc.fit(x_train, y_train)
+print ("{} de precisão".format((etscores.mean() * 100)))
+print(extra_tree_fit.score(x_train, y_train))
 ```
 
 ## Boosting Trees
 
-Este algorítmo demora demais para rodar, descomente se tiver a paciencia de
+Este algorítmo demora demais para rodar, descomente se tiver
+a paciencia de
 esperar.
 Estimativa: 10 min com I7 3.1  8Ram
 
@@ -256,6 +355,6 @@ Estimativa: 10 min com I7 3.1  8Ram
 ```
 
 # Referências Bibliográficas
-http://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.h
+http://scikit-
+learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.h
 tml#sklearn.dummy.DummyClassifier
-
