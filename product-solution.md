@@ -11,17 +11,17 @@ import math
 ```
 
 ```python
+
 with zipfile.ZipFile('Datasets.zip') as ziped_file:
     with ziped_file.open('Datasets/train.csv') as train_file:
-        df_train = pd.read_csv(train_file, header=0).set_index('id')
+        df_train = pd.read_csv(train_file, header=0)
     with ziped_file.open('Datasets/test.csv') as test_file:
-        df_test = pd.read_csv(test_file, header=0).set_index('id')
+        df_test = pd.read_csv(test_file, header=0)
 df_target = pd.DataFrame(df_train.pop('target')) # Get the target
-df_target.target = pd.Categorical(df_target.target) # Transform target in Categorical type
-df_target['categories'] = df_target.target.cat.codes # Add the codes in a columns
 df_target.head() # Show target classes
 df_train.head() # The train dataset
 df_test.head() # It hasn't target
+
 ```
 
 # Tratamento
@@ -35,8 +35,7 @@ entre as features. Visto que há um total de 93 colunas que não foi
 disponibilizada nenhuma informação sobre o que são elas e o que representam e
 portanto, esta análize ajudará a identificar as relações entre as features.
 
-##
-Correlação
+## Correlação
 
 A correlação entre duas variáveis é quando existe algum laço
 matemático que envolve o valor de duas variáveis de alguma forma [ESTATÍSTICA II
@@ -50,27 +49,19 @@ correlação em forma gráfica.
 A correlação de
 [Pearson](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de%0
 A_Pearson)
-mede o grau da correlação (e a direcção dessa correlação - se
-positiva ou
-negativa) entre duas variáveis de escala métrica (intervalar ou de
-rácio/razão).
+mede o grau da correlação (e a direcção dessa correlação - se positiva ou
+negativa) entre duas variáveis de escala métrica (intervalar ou de rácio/razão).
 Já a correlação de
 [Spearman](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de_
 postos_de_Spearman)
-entre duas variáveis é igual à correlação de Pearson entre
-os valores de postos
-daquelas duas variáveis. Enquanto a correlação de Pearson
-avalia relações
-lineares, a correlação de Spearman avalia relações monótonas,
-sejam elas
+entre duas variáveis é igual à correlação de Pearson entre os valores de postos
+daquelas duas variáveis. Enquanto a correlação de Pearson avalia relações
+lineares, a correlação de Spearman avalia relações monótonas, sejam elas
 lineares ou não.
 
-Visto ambos os tipos de correlação, utilizaremos a
-de Pearson
-para avaliar se há alguma correlação linear crescente ou decrescente
-entre as
-variáveis, pois esta relação nos possibilita remover uma delas sem
-prejuizos aos
+Visto ambos os tipos de correlação, utilizaremos a de Pearson
+para avaliar se há alguma correlação linear crescente ou decrescente entre as
+variáveis, pois esta relação nos possibilita remover uma delas sem prejuizos aos
 modelos de machine learn
 
 ```python
@@ -94,12 +85,10 @@ Como sugerido por [Makuka,
 absoluto|Significado|
 |---|---|
 |0.9 < v | Muito forte |
-|0.7 < v <= 0.9 | Forte
-|
+|0.7 < v <= 0.9 | Forte |
 |0.5 < v <= 0.7 | Moderada |
 |0.3 < v <= 0.5 | Fraca |
-|0.0 < v <= 0.3 |
-Desprezível |
+|0.0 < v <= 0.3 | Desprezível |
 
 ```python
 strong_correlation = correlation.where(correlation > 0.8)
@@ -137,270 +126,160 @@ features, entretanto, há 10 colunas que estão fortemente correlacionadas. Pore
 buscamos uma correlação fortíssima para não remover features com comportamentos
 diferentes.
 
-## Train/Test split
-
-Utilizaremos 80% da base de treino para
-efetivamente treinar o modelo e 20% para
-averiguar a performance do modelo.
-
 ```python
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import cross_val_score
-from sklearn.metrics import confusion_matrix
+X_train = df_train
+y_train = df_target.iloc[:, 0]
 
-X = df_train.iloc[:, :].values
-y = df_target.iloc[:, -1].values
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+X_train.head()
+y_train.head()
 ```
 
-## XGBoost
+# Feature Selection
 
-### *eXtreme Gradient Boost*
+É o processo de selecionar um subconjunto de termos do conjunto de treinamento e
+usá-lo na classificação. Serve para dois propósitos: diminuir a quantidade do
+vocabulário de treinamento, tornando o classificador mais eficiente (na maioria
+das vezes o custo computacional de treinar é caro); aumentar a precisão da
+classificação eliminando ruído. Segundo Ikonomakis, Kotsiantis e Tampakas
+(2005), é a redução da dimensionalidade do conjunto de dados que tem o objetivo
+de excluir as características que são consideradas irrelevantes para a
+classificação. Mais pode ser encontrado no [Relatório técnico "conceitos sobre
+Aprendizado de Máquina"](http://conteudo.icmc.usp.br/pessoas/taspardo/TechReport
+UFSCar2009b-MatosEtAl.pdf)
 
-XGBoost é um algoritmo que implementa
-*gradient boosting* de Decision Trees de
-forma rápida e com alta performance.
-**Gradient Boosting** é uma técnica de *machine learning* para problemas de
-regressão e classificação que produz um modelo de predição na forma de
-*ensemble* de modelos de predições fracas, normalmente árvores de decisões.
+Existem diversos técnicas de redução de dimensionalidade, neste progeto será
+utilizado o _Univariate feature selection_ sendo que o mesmo pode ser utilizado
+como comparação para averiguar a acurácia da base com e sem a seleção de
+característica.
+
+## Univariate feature selection
+
+Funciona selecionando os melhores recursos com base em testes estatísticos
+univariados. Pode ser visto como um passo de pré-processamento para um
+estimador. _Scikit-learn_ expõe rotinas de seleção de recursos, sendo utilizado
+o método de transformação _SelectKBest_, no qual seleciona os valores com a
+pontuação mais alta.
 
 ```python
-%%time
-from xgboost import XGBClassifier
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
+import numpy
 
-classifier = XGBClassifier()
-classifier.fit(X_train, y_train)
+train = SelectKBest(score_func=chi2)
+univariate_fit = train.fit(X_train, y_train)
 
-y_pred = classifier.predict(X_test)
+numpy.set_printoptions(precision=3)
+print(univariate_fit.scores_)
+features = univariate_fit.transform(X_train)
 
-cm = confusion_matrix(y_test, y_pred)
-
-accuracies = cross_val_score(estimator=classifier, X=X_train, y=y_train, cv=10)
-print('Média: %.2f' % accuracies.mean())
-print('Desvio padrão: %.4f' % accuracies.std())
-print('Matriz de confusao:\n', cm)
+print(features[:,])
 ```
 
-## Modelo Dummy Classifier
+## Recursive feature elimination
 
-Dummy Classifier é um modelo que faz predições
-usando
-regras simples.
+Tendo feito a seleção de característica utilizando o método _Univariate feature
+selection_ foi feito um cascateamento das _features_ geradas pelo mesmo afim de
+obter uma filtragem de dados para garantir a seleção dos melhores. Este
+cascateamento foi feito utilizando o método de eliminação recursiva de
+características no qual consiste em selecionar recursos de forma recursiva
+considerando pequenos e menores conjuntos de recursos.
 
-O dummy é importante para termos como parâmetro de
-comparação
+```python
+from sklearn.feature_selection import RFE
+from sklearn.linear_model import LogisticRegression
+
+model = LogisticRegression()
+rfe = RFE(model, 3)
+fit = rfe.fit(features, y_train)
+print("Num Features: ", fit.n_features_)
+print("Selected Features: ", fit.support_)
+print("Feature Ranking: ", fit.ranking_)
+
+```
+
+# Modelo Dummy Classifier
+
+Dummy Classifier é um modelo que faz predições usando regras simples.
+
+O dummy é importante para termos como parâmetro de comparação
 com outros modelos.
 
 ```python
 from sklearn.dummy import DummyClassifier
 
-models = ['most_frequent', 'stratified']
+# Most Frequent: always predicts the most frequent label in the training set.
+mf_clf = DummyClassifier(strategy='most_frequent')
+mf_clf.fit(X_train, y_train)
 
-for model in models:
-    clf = DummyClassifier(strategy=model)
-    clf.fit(X_train, y_train)
-    score = clf.score(X_train, y_train)
-    y_pred = clf.predict(X_test)
-    cm = confusion_matrix(y_test, y_pred)
+# Stratified: generates predictions by respecting the training set’s class distribution.
+sf_clf = DummyClassifier(strategy='stratified')
+sf_clf.fit(X_train, y_train)
 
-    # Cross validation
-    accuracies = cross_val_score(estimator=clf, X=X_train, y=y_train, cv=10)
-    print('Média: %.2f' % accuracies.mean())
-    print('Desvio padrão: %.4f' % accuracies.std())
+mf_score = mf_clf.score(X_train, y_train)
+sf_score = sf_clf.score(X_train, y_train)
 
-    # Confusion matrix
-    print('Matriz de confusao de', model, '\n', cm)
-    print(model, 'score: %.2f' % score)
-```
-
-## GridSearchCV
-A ferramenta GridSearch disponibilizada pelo Scikit, gera de
-forma exaustiva candidatos a partir de um grid de  parâmetros especificados com
-o atributo param_grid.
-
-```python
-params = [{'max_depth': [40, 50, 60, 80, 100, 120],
-           'max_features': [70, 80, 90, 92],
-           'min_samples_leaf': [2, 5, 10, 20, 30, 40]}]
-```
-
-Aplicando GridSearchCV ao Decision Tree Classifier:
-
-```python
-%%time
-from sklearn.model_selection import GridSearchCV
-
-def search_params(classifier, params):
-    clf = classifier()
-    grid_search = GridSearchCV(estimator=clf,
-                              param_grid=params,
-                              cv = 10,
-                              n_jobs=-1)
-    
-    grid_search = grid_search.fit(X_train, y_train)
-    print(grid_search.best_score_, grid_search.best_params_)
-    return grid_search.best_score_
-
-search_params(DecisionTreeClassifier, params)
-```
-
-## Decision Tree
-
-### Adicionar descrição de como funciona!!!!
-
-```python
-from sklearn.model_selection import cross_val_score
-from sklearn.tree import DecisionTreeClassifier
-
-def fit_tree(X, Y):
-    tree_classifier = DecisionTreeClassifier(max_features=70, min_samples_leaf=10, max_depth=40)
-    tree_classifier.fit(X, Y)
-    
-    inner_score = tree_classifier.score(X, Y)
-    tree_fit = cross_val_score(tree_classifier, X, Y)
-    
-    return inner_score, tree_fit.mean(), tree_fit.std()
-
-"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(X_train, y_train))
-```
-
-## Distribuição dos dados
-
-Um dos modelos a ser utilizado será o decision tree
-no método de montagem random forest. Este modelo de predição possui um problema
-de viés quando uma das classes na base de treino é mais predominante do que
-outra, ou seja, a distribuição das classes na base de treino devem ser
-semelhantes para evitar problemas de
-[overfiting](http://docs.aws.amazon.com/machine-learning/latest/dg/model-fit-
-underfitting-vs-overfitting.html).
-
-Para tanto, precisa-se descobrir qual a
-contagem de cada classe disponível na base de treino, montaremos um histograma
-para verificar a diferença entre elas.
-
-```python
-counts = [0] *len(df_target.target.cat.categories)
-
-def reduce(target):
-    counts[target.categories] += 1
-    return counts[target.categories]
-
-df_target['increase_count'] = df_target.apply(reduce, axis=1)
-df_target.groupby('target').count()
-df_target.groupby('target')['increase_count'].max().sum() == df_target.target.count()
-```
-
-### Filtrar dados
-
-Agora, iremos filtrar os dados deixando apenas os primeiros
-registros. O critério de filtrar os dados será pegar a classe que possue o menor
-número e utilizar ele como base para remover os demais, considerando um tamanho
-máximo de até 2x o da menor classe
-
-```python
-distance_percent = 2
-minimum_value = df_target.groupby('target')['increase_count'].max().min()
-df_rtarget = df_target[ df_target.increase_count < minimum_value*distance_percent ]
-df_rtarget.groupby('target').count()
-df_rtrain = df_train.drop( df_target[df_target.increase_count >= minimum_value * distance_percent].index )
-df_rtrain.shape[0] == df_rtarget.shape[0]
-```
-
-### Verificando resultado
-
-Após aplicar uma melhor distribuição nos dados,
-rodou-se novamene o algorítmo da decision tree e percebeu-se que a acurácia do
-modelo diminuiu, e portanto, não será utilizado.
-
-```python
-"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(df_rtrain, df_rtarget.target))
+print('Most Frequent Dummy Score: %.4f' % mf_score)
+print('Stratified Dummy Score: %.4f' % sf_score)
 ```
 
 # Random Forest
 
-Breiman breiman, 2001, descreve Random Forests como uma
-evolução das decisions
-trees, onde várias ávores são formadas para criar um
-modelo com maior precisão.
-Isto é feito a partir da separação dos Dados em
-conjutos
-de dados menores e aleatórios. Cada árvore é contruida a partir de um
-pedaço
-aleatório dos dados. Quando um novo dado chega, a predição é feita por
-todas as
+Breiman breiman, 2001, descreve Random Forests como uma evolução das decisions
+trees, onde várias ávores são formadas para criar um modelo com maior precisão.
+Isto é feito a partir da separação dos Dados em conjutos
+de dados menores e aleatórios. Cada árvore é contruida a partir de um pedaço
+aleatório dos dados. Quando um novo dado chega, a predição é feita por todas as
 Árvores e ao fim é feita uma
-votação por maioria, ou seja, a categoria
-com mais votos ganha e o resultado é
+votação por maioria, ou seja, a categoria com mais votos ganha e o resultado é
 dado.
 
-![Workflow Random
-forest](forest.jpg)
+![Workflow Random forest](forest.jpg)
 
-De acordo com breiman, 2001, as RFs corrigem a maior parte
-dos problemas de
-Overfitting que as Árvores de decisão apresentam. Tudo depende
-do quanto as DT
-contidas dentro da Random Forest. Isto é, o quanto elas
-representam os dados.
+De acordo com breiman, 2001, as RFs corrigem a maior parte dos problemas de
+Overfitting que as Árvores de decisão apresentam. Tudo depende do quanto as DT
+contidas dentro da Random Forest. Isto é, o quanto elas representam os dados.
 
 Referências:
+
 [BREIMAN](https://www.stat.berkeley.edu/users/breiman/randomforest2001.pdf),
 Leo. Random forests. Machine learning, v. 45, n. 1, p. 5-32, 2001.
 
-##
-Utilizando o algoritmo
+## Utilizando o algoritmo
 
 ```python
+from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import RandomForestClassifier
-clf = RandomForestClassifier(n_estimators=10, max_features=70, min_samples_leaf=10, max_depth=40)
-clf = clf.fit(X_train, y_train)
+y = df_target.iloc[:,-1]
+clf = RandomForestClassifier(n_estimators=10)
+clf = clf.fit(df_train, y)
 
-train_score = clf.score(X_train, y_train)
-test_score = cross_val_score(clf, X_train, y_train)
-
-train_score
-test_score
 ```
 
 ## Importancia das features para a RF
 
-A seguir vemos quais as influências de
-cada uma das features para o uso no random forest. Quanto maior no gráfico,
-maior é a importância da feature.
-
 ```python
-fig, axis = plt.subplots(figsize=(15, 5))
-plot = axis.bar(x_train.columns, clf.feature_importances_)
-plot = axis.set_xticklabels(x_train.columns.values, rotation='vertical')
-plot = axis.set_xlabel('feature')
-plot = axis.set_ylabel('importance')
-plt.show()
-
+clf.feature_importances_
 ```
 
 ## Verificando a acurácia com os dados de treinamento
 
-Utilizando os dados que
-foram utilizados parar treinar o algoritmo como entrada
-para predição nos dá
-noção se o modelo pode estar viciado.
+Utilizando os dados que foram utilizados parar treinar o algoritmo como entrada
+para predição nos dá noção se o modelo pode estar viciado.
 
 ```python
-print ("{} de precisão".format(clf.score(X_train, y_train) * 100))
+print (clf.score(df_train, y) * 100, end='')
+print ("% de precisão")
 ```
 
 ## Verificando com Cross Validation
 
-Cross validation irá predizer um pedaço do
-dataset utilizando o modelo treinado
-com o resto dos dados que não fazem parte
-deste dataset.
+Cross validation irá predizer um pedaço do dataset utilizando o modelo treinado
+com o resto dos dados que não fazem parte deste dataset.
 
 ```python
-rfscores = cross_val_score(clf, X_train, y_train)
-print ("{} de precisão".format(rfscores.mean() * 100))
-
+rfscores = cross_val_score(clf, df_train, y)
+print (rfscores.mean() * 100, end='')
+print ("% de precisão")
 ```
 
 ## ExtraTrees
@@ -415,16 +294,14 @@ learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
 from sklearn.ensemble import ExtraTreesClassifier
 
 etc = ExtraTreesClassifier();
-etscores = cross_val_score(clf, X_train, y_train)
-extra_tree_fit = etc.fit(X_train, y_train)
-print ("{} de precisão".format((etscores.mean() * 100)))
-print(extra_tree_fit.score(X_train, y_train))
+etscores = cross_val_score(clf, df_train, y)
+print (etscores.mean() * 100, end='')
+print ("% de precisão")
 ```
 
 ## Boosting Trees
 
-Este algorítmo demora demais para rodar, descomente se tiver
-a paciencia de
+Este algorítmo demora demais para rodar, descomente se tiver a paciencia de
 esperar.
 Estimativa: 10 min com I7 3.1  8Ram
 
@@ -440,21 +317,6 @@ Estimativa: 10 min com I7 3.1  8Ram
 #print ("%")
 ```
 
-### MLP Classifier
-Esse algoritmo é um classificador Perceptron de Multicamadas usado para fazer o
-treinamento de modelos, e é uma biblioteca do Scikit-Learn.
-
-```python
-from sklearn.neural_network import MLPClassifier
-
-mlp = MLPClassifier(solver='adam', alpha=0.0001, hidden_layer_sizes=(5,),random_state=1, learning_rate='constant', learning_rate_init=0.01, max_iter=50, activation='logistic', momentum=0.9, verbose=True, tol=0.0001)
-mlp.fit(x_train, y_train)
-print('---------------------------------------------------')
-
-print('Score: ', mlp.score(x_train, y_train))
-```
-
 # Referências Bibliográficas
-http://scikit-
-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.h
+http://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.h
 tml#sklearn.dummy.DummyClassifier
