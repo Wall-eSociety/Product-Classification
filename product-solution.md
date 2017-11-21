@@ -35,8 +35,7 @@ entre as features. Visto que há um total de 93 colunas que não foi
 disponibilizada nenhuma informação sobre o que são elas e o que representam e
 portanto, esta análize ajudará a identificar as relações entre as features.
 
-##
-Correlação
+## Correlação
 
 A correlação entre duas variáveis é quando existe algum laço
 matemático que envolve o valor de duas variáveis de alguma forma [ESTATÍSTICA II
@@ -133,6 +132,69 @@ y_train = df_target.iloc[:, 0]
 
 X_train.head()
 y_train.head()
+```
+
+# Feature Selection
+
+É o processo de selecionar um subconjunto de termos do conjunto de treinamento e
+usá-lo na classificação. Serve para dois propósitos: diminuir a quantidade do
+vocabulário de treinamento, tornando o classificador mais eficiente (na maioria
+das vezes o custo computacional de treinar é caro); aumentar a precisão da
+classificação eliminando ruído. Segundo Ikonomakis, Kotsiantis e Tampakas
+(2005), é a redução da dimensionalidade do conjunto de dados que tem o objetivo
+de excluir as características que são consideradas irrelevantes para a
+classificação. Mais pode ser encontrado no [Relatório técnico "conceitos sobre
+Aprendizado de Máquina"](http://conteudo.icmc.usp.br/pessoas/taspardo/TechReport
+UFSCar2009b-MatosEtAl.pdf)
+
+Existem diversos técnicas de redução de dimensionalidade, neste progeto será
+utilizado o _Univariate feature selection_ sendo que o mesmo pode ser utilizado
+como comparação para averiguar a acurácia da base com e sem a seleção de
+característica.
+
+## Univariate feature selection
+
+Funciona selecionando os melhores recursos com base em testes estatísticos
+univariados. Pode ser visto como um passo de pré-processamento para um
+estimador. _Scikit-learn_ expõe rotinas de seleção de recursos, sendo utilizado
+o método de transformação _SelectKBest_, no qual seleciona os valores com a
+pontuação mais alta.
+
+```python
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
+import numpy
+
+train = SelectKBest(score_func=chi2)
+univariate_fit = train.fit(X_train, y_train)
+
+numpy.set_printoptions(precision=3)
+print(univariate_fit.scores_)
+features = univariate_fit.transform(X_train)
+
+print(features[:,])
+```
+
+## Recursive feature elimination
+
+Tendo feito a seleção de característica utilizando o método _Univariate feature
+selection_ foi feito um cascateamento das _features_ geradas pelo mesmo afim de
+obter uma filtragem de dados para garantir a seleção dos melhores. Este
+cascateamento foi feito utilizando o método de eliminação recursiva de
+características no qual consiste em selecionar recursos de forma recursiva
+considerando pequenos e menores conjuntos de recursos.
+
+```python
+from sklearn.feature_selection import RFE
+from sklearn.linear_model import LogisticRegression
+
+model = LogisticRegression()
+rfe = RFE(model, 3)
+fit = rfe.fit(features, y_train)
+print("Num Features: ", fit.n_features_)
+print("Selected Features: ", fit.support_)
+print("Feature Ranking: ", fit.ranking_)
+
 ```
 
 # Modelo Dummy Classifier
@@ -258,4 +320,3 @@ Estimativa: 10 min com I7 3.1  8Ram
 # Referências Bibliográficas
 http://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.h
 tml#sklearn.dummy.DummyClassifier
-
