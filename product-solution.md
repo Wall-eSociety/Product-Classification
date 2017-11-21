@@ -288,8 +288,18 @@ clf = clf.fit(x_train, y_train)
 
 ## Importancia das features para a RF
 
+A seguir vemos quais as influências de
+cada uma das features para o uso no random forest. Quanto maior no gráfico,
+maior é a importância da feature.
+
 ```python
-clf.feature_importances_
+fig, axis = plt.subplots(figsize=(15, 5))
+plot = axis.bar(x_train.columns, clf.feature_importances_)
+plot = axis.set_xticklabels(x_train.columns.values, rotation='vertical')
+plot = axis.set_xlabel('feature')
+plot = axis.set_ylabel('importance')
+plt.show()
+
 ```
 
 ## Verificando a acurácia com os dados de treinamento
@@ -300,8 +310,7 @@ para predição nos dá
 noção se o modelo pode estar viciado.
 
 ```python
-print (clf.score(x_train, y_train) * 100, end='')
-print ("% de precisão")
+print ("{} de precisão".format(clf.score(x_train, y_train) * 100))
 ```
 
 ## Verificando com Cross Validation
@@ -313,7 +322,7 @@ deste dataset.
 
 ```python
 rfscores = cross_val_score(clf, x_train, y_train)
-print ("{} de precisão".format(rfscores.mean() * 100, end=''))
+print ("{} de precisão".format(rfscores.mean() * 100))
 
 ```
 
