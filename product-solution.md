@@ -322,18 +322,15 @@ def plot_confusion_matrix(cm, classes,
 
 ## Modelo Dummy Classifier
 
-Dummy Classifier é um modelo que faz predições
-usando
-regras simples.
+Dummy Classifier é um modelo que faz predições usando regras simples.
 
-O dummy é importante para termos como parâmetro de
-comparação
-com outros modelos.
+O dummy é importante para termos como parâmetro de comparação com outros modelos.Não pode ser utilizado em problemas reais porque ele é apenas para realizar comparações e trabalha com aleatoriedade e frequencia de repetições para realizar as predições.
+
+Usamos dois tipos de estratégia:
 
 * **Stratified**: realiza predições baseadas na
 distribuição das classes da base de treino. (Ex.: 10% A, 20% B, 50% C, 20% D)
-*
-**Most Frequent**: sempre prediz com a classe mais frequente na base de treino
+* **Most Frequent**: sempre prediz com a classe mais frequente na base de treino
 
 ```python
 from sklearn.dummy import DummyClassifier
