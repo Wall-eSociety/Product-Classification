@@ -168,7 +168,13 @@ print(cm)
 Dummy Classifier é um modelo que faz predições usando regras simples.
 
 O dummy é importante para termos como parâmetro de comparação
-com outros modelos.
+com outros modelos.Não pode ser utilizado em problemas reais porque ele é apenas para realizar comparações e trabalha com aleatoriedade e frequencia de repetições para realizar as predições.
+
+Usamos dois tipos de estratégia:
+
+Most_frequent: sempre prediz a label que mais se repete no conjunto de treinamento.
+
+Stratified: Gera predições respeitando a distribuicao do conjunto de treinamento.
 
 ```python
 from sklearn.dummy import DummyClassifier
