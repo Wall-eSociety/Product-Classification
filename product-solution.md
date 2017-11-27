@@ -35,8 +35,7 @@ entre as features. Visto que há um total de 93 colunas que não foi
 disponibilizada nenhuma informação sobre o que são elas e o que representam e
 portanto, esta análize ajudará a identificar as relações entre as features.
 
-##
-Correlação
+## Correlação
 
 A correlação entre duas variáveis é quando existe algum laço
 matemático que envolve o valor de duas variáveis de alguma forma [ESTATÍSTICA II
@@ -148,7 +147,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix
 
 X = df_train.iloc[:, :].values
-y = df_target.iloc[:, 0].values
+y = df_target.iloc[:, -1].values
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 ```
@@ -181,14 +180,6 @@ print('Desvio padrão: %.4f' % accuracies.std())
 print('Matriz de confusao:\n', cm)
 ```
 
-```python
-x_train = df_train
-y_train = df_target.target
-
-x_train.head()
-y_train.head()
-```
-
 ## Modelo Dummy Classifier
 
 Dummy Classifier é um modelo que faz predições usando
@@ -217,19 +208,6 @@ for model in models:
     # Confusion matrix
     print('Matriz de confusao de', model, '\n', cm)
     print(model, 'score: %.2f' % score)
-# Most Frequent: always predicts the most frequent label in the training set.
-mf_clf = DummyClassifier(strategy='most_frequent')
-mf_clf.fit(x_train, y_train)
-
-# Stratified: generates predictions by respecting the training set’s class distribution.
-sf_clf = DummyClassifier(strategy='stratified')
-sf_clf.fit(x_train, y_train)
-
-mf_score = mf_clf.score(x_train, y_train)
-sf_score = sf_clf.score(x_train, y_train)
-
-print('Most Frequent Dummy Score: %.4f' % mf_score)
-print('Stratified Dummy Score: %.4f' % sf_score)
 ```
 
 # Decision Tree
@@ -247,7 +225,7 @@ def fit_tree(X, Y):
     tree_fit = cross_val_score(tree_classifier, X, Y)
     return inner_score, tree_fit.mean(), tree_fit.std()
 
-"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(x_train, y_train))
+"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(X_train, y_train))
 
 ```
 
@@ -341,7 +319,7 @@ Utilizando o algoritmo
 ```python
 from sklearn.ensemble import RandomForestClassifier
 clf = RandomForestClassifier(n_estimators=10)
-clf = clf.fit(x_train, y_train)
+clf = clf.fit(X_train, y_train)
 
 ```
 
@@ -369,7 +347,7 @@ para predição nos dá
 noção se o modelo pode estar viciado.
 
 ```python
-print ("{} de precisão".format(clf.score(x_train, y_train) * 100))
+print ("{} de precisão".format(clf.score(X_train, y_train) * 100))
 ```
 
 ## Verificando com Cross Validation
@@ -380,7 +358,7 @@ com o resto dos dados que não fazem parte
 deste dataset.
 
 ```python
-rfscores = cross_val_score(clf, x_train, y_train)
+rfscores = cross_val_score(clf, X_train, y_train)
 print ("{} de precisão".format(rfscores.mean() * 100))
 
 ```
@@ -397,10 +375,10 @@ learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
 from sklearn.ensemble import ExtraTreesClassifier
 
 etc = ExtraTreesClassifier();
-etscores = cross_val_score(clf, x_train, y_train)
-extra_tree_fit = etc.fit(x_train, y_train)
+etscores = cross_val_score(clf, X_train, y_train)
+extra_tree_fit = etc.fit(X_train, y_train)
 print ("{} de precisão".format((etscores.mean() * 100)))
-print(extra_tree_fit.score(x_train, y_train))
+print(extra_tree_fit.score(X_train, y_train))
 ```
 
 ## Boosting Trees
