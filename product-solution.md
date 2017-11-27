@@ -35,7 +35,8 @@ entre as features. Visto que há um total de 93 colunas que não foi
 disponibilizada nenhuma informação sobre o que são elas e o que representam e
 portanto, esta análize ajudará a identificar as relações entre as features.
 
-## Correlação
+##
+Correlação
 
 A correlação entre duas variáveis é quando existe algum laço
 matemático que envolve o valor de duas variáveis de alguma forma [ESTATÍSTICA II
@@ -138,7 +139,8 @@ diferentes.
 
 ## Train/Test split
 
-Utilizaremos 80% da base de treino para efetivamente treinar o modelo e 20% para
+Utilizaremos 80% da base de treino para
+efetivamente treinar o modelo e 20% para
 averiguar a performance do modelo.
 
 ```python
@@ -156,9 +158,9 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
 ### *eXtreme Gradient Boost*
 
-XGBoost é um algoritmo que implementa *gradient boosting* de Decision Trees de
+XGBoost é um algoritmo que implementa
+*gradient boosting* de Decision Trees de
 forma rápida e com alta performance.
-
 **Gradient Boosting** é uma técnica de *machine learning* para problemas de
 regressão e classificação que produz um modelo de predição na forma de
 *ensemble* de modelos de predições fracas, normalmente árvores de decisões.
@@ -182,10 +184,12 @@ print('Matriz de confusao:\n', cm)
 
 ## Modelo Dummy Classifier
 
-Dummy Classifier é um modelo que faz predições usando
+Dummy Classifier é um modelo que faz predições
+usando
 regras simples.
 
-O dummy é importante para termos como parâmetro de comparação
+O dummy é importante para termos como parâmetro de
+comparação
 com outros modelos.
 
 ```python
@@ -210,23 +214,55 @@ for model in models:
     print(model, 'score: %.2f' % score)
 ```
 
-# Decision Tree
+## GridSearchCV
+A ferramenta GridSearch disponibilizada pelo Scikit, gera de
+forma exaustiva candidatos a partir de um grid de  parâmetros especificados com
+o atributo param_grid.
 
-# Adicionar descrição de como funciona!!!!
+```python
+params = [{'max_depth': [40, 50, 60, 80, 100, 120],
+           'max_features': [70, 80, 90, 92],
+           'min_samples_leaf': [2, 5, 10, 20, 30, 40]}]
+```
+
+Aplicando GridSearchCV ao Decision Tree Classifier:
+
+```python
+%%time
+from sklearn.model_selection import GridSearchCV
+
+def search_params(classifier, params):
+    clf = classifier()
+    grid_search = GridSearchCV(estimator=clf,
+                              param_grid=params,
+                              cv = 10,
+                              n_jobs=-1)
+    
+    grid_search = grid_search.fit(X_train, y_train)
+    print(grid_search.best_score_, grid_search.best_params_)
+    return grid_search.best_score_
+
+search_params(DecisionTreeClassifier, params)
+```
+
+## Decision Tree
+
+### Adicionar descrição de como funciona!!!!
 
 ```python
 from sklearn.model_selection import cross_val_score
-from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier
+
 def fit_tree(X, Y):
-    tree_classifier = tree.DecisionTreeClassifier()
+    tree_classifier = DecisionTreeClassifier(max_features=70, min_samples_leaf=10, max_depth=40)
     tree_classifier.fit(X, Y)
+    
     inner_score = tree_classifier.score(X, Y)
-    tree_classifier = tree.DecisionTreeClassifier()
     tree_fit = cross_val_score(tree_classifier, X, Y)
+    
     return inner_score, tree_fit.mean(), tree_fit.std()
 
 "inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(X_train, y_train))
-
 ```
 
 ## Distribuição dos dados
@@ -279,7 +315,6 @@ modelo diminuiu, e portanto, não será utilizado.
 
 ```python
 "inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(df_rtrain, df_rtarget.target))
-
 ```
 
 # Random Forest
@@ -318,9 +353,14 @@ Utilizando o algoritmo
 
 ```python
 from sklearn.ensemble import RandomForestClassifier
-clf = RandomForestClassifier(n_estimators=10)
+clf = RandomForestClassifier(n_estimators=10, max_features=70, min_samples_leaf=10, max_depth=40)
 clf = clf.fit(X_train, y_train)
 
+train_score = clf.score(X_train, y_train)
+test_score = cross_val_score(clf, X_train, y_train)
+
+train_score
+test_score
 ```
 
 ## Importancia das features para a RF
