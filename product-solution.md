@@ -11,7 +11,6 @@ import math
 ```
 
 ```python
-
 with zipfile.ZipFile('Datasets.zip') as ziped_file:
     with ziped_file.open('Datasets/train.csv') as train_file:
         df_train = pd.read_csv(train_file, header=0)
@@ -21,7 +20,6 @@ df_target = pd.DataFrame(df_train.pop('target')) # Get the target
 df_target.head() # Show target classes
 df_train.head() # The train dataset
 df_test.head() # It hasn't target
-
 ```
 
 # Tratamento
@@ -134,6 +132,8 @@ averiguar a performance do modelo.
 
 ```python
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import confusion_matrix
 
 X = df_train.iloc[:, :].values
 y = df_target.iloc[:, 0].values
@@ -142,6 +142,15 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 ```
 
 ## XGBoost
+
+### *eXtreme Gradient Boost*
+
+XGBoost é um algoritmo que implementa *gradient boosting* de Decision Trees de
+forma rápida e com alta performance.
+
+**Gradient Boosting** é uma técnica de *machine learning* para problemas de
+regressão e classificação que produz um modelo de predição na forma de
+*ensemble* de modelos de predições fracas, normalmente árvores de decisões.
 
 ```python
 %%time
@@ -152,15 +161,16 @@ classifier.fit(X_train, y_train)
 
 y_pred = classifier.predict(X_test)
 
-from sklearn.metrics import confusion_matrix
 cm = confusion_matrix(y_test, y_pred)
 
-from sklearn.model_selection import cross_val_score
 accuracies = cross_val_score(estimator=classifier, X=X_train, y=y_train, cv=10)
-accuracies.mean()
-accuracies.std()
+print('Média: %.2f' % accuracies.mean())
+print('Desvio padrão: %.4f' % accuracies.std())
+print('Matriz de confusao:\n', cm)
+```
 
-print(cm)
+```python
+print('Matriz de confusao:\n', cm)
 ```
 
 ## Modelo Dummy Classifier
@@ -168,17 +178,10 @@ print(cm)
 Dummy Classifier é um modelo que faz predições usando regras simples.
 
 O dummy é importante para termos como parâmetro de comparação
-com outros modelos.Não pode ser utilizado em problemas reais porque ele é apenas para realizar comparações e trabalha com aleatoriedade e frequencia de repetições para realizar as predições.
-
-Usamos dois tipos de estratégia:
-
-Most_frequent: sempre prediz a label que mais se repete no conjunto de treinamento.
-
-Stratified: Gera predições respeitando a distribuicao do conjunto de treinamento.
+com outros modelos.
 
 ```python
 from sklearn.dummy import DummyClassifier
-from sklearn.metrics import confusion_matrix
 
 models = ['most_frequent', 'stratified']
 
@@ -189,12 +192,12 @@ for model in models:
     y_pred = clf.predict(X_test)
     cm = confusion_matrix(y_test, y_pred)
     
-    # K Fold validation
+    # Cross validation 
     accuracies = cross_val_score(estimator=clf, X=X_train, y=y_train, cv=10)
     print('Média: %.2f' % accuracies.mean())
     print('Desvio padrão: %.4f' % accuracies.std())
     
-    # Matriz de confusao
+    # Confusion matrix
     print('Matriz de confusao de', model, '\n', cm)
     print(model, 'score: %.2f' % score)
 ```
