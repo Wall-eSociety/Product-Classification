@@ -11,7 +11,6 @@ import math
 ```
 
 ```python
-
 with zipfile.ZipFile('Datasets.zip') as ziped_file:
     with ziped_file.open('Datasets/train.csv') as train_file:
         df_train = pd.read_csv(train_file, header=0).set_index('id')
@@ -23,7 +22,6 @@ df_target['categories'] = df_target.target.cat.codes # Add the codes in a column
 df_target.head() # Show target classes
 df_train.head() # The train dataset
 df_test.head() # It hasn't target
-
 ```
 
 # Tratamento
@@ -139,57 +137,132 @@ features, entretanto, há 10 colunas que estão fortemente correlacionadas. Pore
 buscamos uma correlação fortíssima para não remover features com comportamentos
 diferentes.
 
-```python
-x_train = df_train
-y_train = df_target.target
+## Train/Test split
 
-x_train.head()
-y_train.head()
+Utilizaremos 80% da base de treino para
+efetivamente treinar o modelo e 20% para
+averiguar a performance do modelo.
+
+```python
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import confusion_matrix
+
+X = df_train.iloc[:, :].values
+y = df_target.iloc[:, -1].values
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 ```
 
-# Modelo Dummy Classifier
+## XGBoost
 
-Dummy Classifier é um modelo que faz predições usando
+### *eXtreme Gradient Boost*
+
+XGBoost é um algoritmo que implementa
+*gradient boosting* de Decision Trees de
+forma rápida e com alta performance.
+**Gradient Boosting** é uma técnica de *machine learning* para problemas de
+regressão e classificação que produz um modelo de predição na forma de
+*ensemble* de modelos de predições fracas, normalmente árvores de decisões.
+
+```python
+%%time
+from xgboost import XGBClassifier
+
+classifier = XGBClassifier()
+classifier.fit(X_train, y_train)
+
+y_pred = classifier.predict(X_test)
+
+cm = confusion_matrix(y_test, y_pred)
+
+accuracies = cross_val_score(estimator=classifier, X=X_train, y=y_train, cv=10)
+print('Média: %.2f' % accuracies.mean())
+print('Desvio padrão: %.4f' % accuracies.std())
+print('Matriz de confusao:\n', cm)
+```
+
+## Modelo Dummy Classifier
+
+Dummy Classifier é um modelo que faz predições
+usando
 regras simples.
 
-O dummy é importante para termos como parâmetro de comparação
+O dummy é importante para termos como parâmetro de
+comparação
 com outros modelos.
 
 ```python
 from sklearn.dummy import DummyClassifier
 
-# Most Frequent: always predicts the most frequent label in the training set.
-mf_clf = DummyClassifier(strategy='most_frequent')
-mf_clf.fit(x_train, y_train)
+models = ['most_frequent', 'stratified']
 
-# Stratified: generates predictions by respecting the training set’s class distribution.
-sf_clf = DummyClassifier(strategy='stratified')
-sf_clf.fit(x_train, y_train)
+for model in models:
+    clf = DummyClassifier(strategy=model)
+    clf.fit(X_train, y_train)
+    score = clf.score(X_train, y_train)
+    y_pred = clf.predict(X_test)
+    cm = confusion_matrix(y_test, y_pred)
 
-mf_score = mf_clf.score(x_train, y_train)
-sf_score = sf_clf.score(x_train, y_train)
+    # Cross validation
+    accuracies = cross_val_score(estimator=clf, X=X_train, y=y_train, cv=10)
+    print('Média: %.2f' % accuracies.mean())
+    print('Desvio padrão: %.4f' % accuracies.std())
 
-print('Most Frequent Dummy Score: %.4f' % mf_score)
-print('Stratified Dummy Score: %.4f' % sf_score)
+    # Confusion matrix
+    print('Matriz de confusao de', model, '\n', cm)
+    print(model, 'score: %.2f' % score)
 ```
 
-# Decision Tree
+## GridSearchCV
+A ferramenta GridSearch disponibilizada pelo Scikit, gera de
+forma exaustiva candidatos a partir de um grid de  parâmetros especificados com
+o atributo param_grid.
 
-# Adicionar descrição de como funciona!!!!
+```python
+params = [{'max_depth': [40, 50, 60, 80, 100, 120],
+           'max_features': [70, 80, 90, 92],
+           'min_samples_leaf': [2, 5, 10, 20, 30, 40]}]
+```
+
+Aplicando GridSearchCV ao Decision Tree Classifier:
+
+```python
+%%time
+from sklearn.model_selection import GridSearchCV
+
+def search_params(classifier, params):
+    clf = classifier()
+    grid_search = GridSearchCV(estimator=clf,
+                              param_grid=params,
+                              cv = 10,
+                              n_jobs=-1)
+    
+    grid_search = grid_search.fit(X_train, y_train)
+    print(grid_search.best_score_, grid_search.best_params_)
+    return grid_search.best_score_
+
+search_params(DecisionTreeClassifier, params)
+```
+
+## Decision Tree
+
+### Adicionar descrição de como funciona!!!!
 
 ```python
 from sklearn.model_selection import cross_val_score
-from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier
+
 def fit_tree(X, Y):
-    tree_classifier = tree.DecisionTreeClassifier()
+    tree_classifier = DecisionTreeClassifier(max_features=70, min_samples_leaf=10, max_depth=40)
     tree_classifier.fit(X, Y)
+    
     inner_score = tree_classifier.score(X, Y)
-    tree_classifier = tree.DecisionTreeClassifier()
     tree_fit = cross_val_score(tree_classifier, X, Y)
+    
     return inner_score, tree_fit.mean(), tree_fit.std()
 
-"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(x_train, y_train))
-
+"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(X_train, y_train))
 ```
 
 ## Distribuição dos dados
@@ -242,7 +315,6 @@ modelo diminuiu, e portanto, não será utilizado.
 
 ```python
 "inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(df_rtrain, df_rtarget.target))
-
 ```
 
 # Random Forest
@@ -281,9 +353,14 @@ Utilizando o algoritmo
 
 ```python
 from sklearn.ensemble import RandomForestClassifier
-clf = RandomForestClassifier(n_estimators=10)
-clf = clf.fit(x_train, y_train)
+clf = RandomForestClassifier(n_estimators=10, max_features=70, min_samples_leaf=10, max_depth=40)
+clf = clf.fit(X_train, y_train)
 
+train_score = clf.score(X_train, y_train)
+test_score = cross_val_score(clf, X_train, y_train)
+
+train_score
+test_score
 ```
 
 ## Importancia das features para a RF
@@ -310,7 +387,7 @@ para predição nos dá
 noção se o modelo pode estar viciado.
 
 ```python
-print ("{} de precisão".format(clf.score(x_train, y_train) * 100))
+print ("{} de precisão".format(clf.score(X_train, y_train) * 100))
 ```
 
 ## Verificando com Cross Validation
@@ -321,7 +398,7 @@ com o resto dos dados que não fazem parte
 deste dataset.
 
 ```python
-rfscores = cross_val_score(clf, x_train, y_train)
+rfscores = cross_val_score(clf, X_train, y_train)
 print ("{} de precisão".format(rfscores.mean() * 100))
 
 ```
@@ -338,10 +415,10 @@ learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
 from sklearn.ensemble import ExtraTreesClassifier
 
 etc = ExtraTreesClassifier();
-etscores = cross_val_score(clf, x_train, y_train)
-extra_tree_fit = etc.fit(x_train, y_train)
+etscores = cross_val_score(clf, X_train, y_train)
+extra_tree_fit = etc.fit(X_train, y_train)
 print ("{} de precisão".format((etscores.mean() * 100)))
-print(extra_tree_fit.score(x_train, y_train))
+print(extra_tree_fit.score(X_train, y_train))
 ```
 
 ## Boosting Trees
