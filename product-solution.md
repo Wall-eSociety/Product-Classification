@@ -363,6 +363,10 @@ Estimativa: 10 min com I7 3.1  8Ram
 #print ("%")
 ```
 
+### MLP Classifier
+Esse algoritmo é um classificador Perceptron de Multicamadas usado para fazer o
+treinamento de modelos, e é uma biblioteca do Scikit-Learn.
+
 ```python
 from sklearn.neural_network import MLPClassifier
 
