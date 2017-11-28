@@ -363,6 +363,16 @@ Estimativa: 10 min com I7 3.1  8Ram
 #print ("%")
 ```
 
+```python
+from sklearn.neural_network import MLPClassifier
+
+mlp = MLPClassifier(solver='adam', alpha=0.0001, hidden_layer_sizes=(5,),random_state=1, learning_rate='constant', learning_rate_init=0.01, max_iter=50, activation='logistic', momentum=0.9, verbose=True, tol=0.0001)
+mlp.fit(x_train, y_train)
+print('---------------------------------------------------')
+
+print('Score: ', mlp.score(x_train, y_train))
+```
+
 # Referências Bibliográficas
 http://scikit-
 learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.h
