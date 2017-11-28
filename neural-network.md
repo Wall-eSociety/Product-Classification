@@ -1,2 +1,0 @@
-Redes Neurais é um algoritmo de aprendizado que é influenciado pela estrutura e os aspectos funcionais de redes neurais biologicas. Computações são estruturadas em termos de um grupo interligado de neurônios artificiais, que processam informação usando uma abordagem conexionista para computação.
-Eles são usualmente usados para modelar relações complexas entre inputs e outputs, para achar padrões em dados or para capturar uma estrutura estatistica em um distribuição de probabilidade entre duas variaveis observaveis.
