@@ -441,17 +441,24 @@ Estimativa: 10 min com I7 3.1  8Ram
 ```
 
 ### MLP Classifier
-Esse algoritmo é um classificador Perceptron de Multicamadas usado para fazer o
+Esse algoritmo é um classificador Perceptron de Multicamadas
+usado para fazer o
 treinamento de modelos, e é uma biblioteca do Scikit-Learn.
 
 ```python
 from sklearn.neural_network import MLPClassifier
 
-mlp = MLPClassifier(solver='adam', alpha=0.0001, hidden_layer_sizes=(5,),random_state=1, learning_rate='constant', learning_rate_init=0.01, max_iter=50, activation='logistic', momentum=0.9, verbose=True, tol=0.0001)
-mlp.fit(x_train, y_train)
-print('---------------------------------------------------')
+mlp = MLPClassifier()
+mlp.fit(X_train, y_train)
+saidas = mlp.predict(X_test)
+trac = "---------------------------------------------------"
 
-print('Score: ', mlp.score(x_train, y_train))
+print(trac)
+print('Saida redes neurais: ', saidas)
+print('Saida desejada', y_test)
+print(trac)
+print('Score: ', mlp.score(X_test, y_test))
+
 ```
 
 # Referências Bibliográficas
