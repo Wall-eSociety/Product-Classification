@@ -489,6 +489,64 @@ A seguir vemos quais as influências de
 cada uma das features para o uso no random forest. Quanto maior no gráfico,
 maior é a importância da feature.
 
+### Gini
+
+O método utilizado para gerar a
+importância das features no modelo é a Decrease Mean Importance, que utiliza em
+seus cálculos um indicador de impureza no sistema. No caso do random forest
+implementado [(LOUPPE et al.,
+2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf),
+este indicador é o Gini Impurity que pode ser entendido como uma redução da
+probabilidade de errar a classificação de uma categoria dentro de um algorítmo
+de árvore [(Sebastian Raschaka)](https://sebastianraschka.com/faq/docs/decision-
+tree-binary.html).
+
+#### O indice
+O indice de Gini pode ser calculado utilizando
+a seguinte fórmula[(TEKIMONO,
+2009)](http://people.revoledu.com/kardi/tutorial/DecisionTree/how-to-measure-
+impurity.htm):
+
+\begin{equation}
+    Gini = 1- \sum_{i=1} p_i^2
+\end{equation}
+Em que $p_i$ é a probabilidade da ocorrência de uma determinada classe,
+desconsiderando os atributos. Ou seja $N_i$ é o número de ocorrências da classe
+i e N é o total de elementos das classes:
+
+\begin{equation}
+    p_i =
+\frac{N_i}{N}
+\end{equation}
+
+#### Para Decisions Trees
+
+Para Classification and
+Regression Trees (CART), utiliza-se o indice de Gini modificado, isto é,
+calcula-se ainda as probabilidades em $p_i$, mas agora utiliza-se do indice de
+Gini nos filhos da esquerda $t_l$ e direita $t_r$. Recalcula-se as
+probabilidades para ambos os nós também em $p_l$ e $p_r$ utilizando como base as
+possíveis classes reduzidas a $N_t$ [(LOUPPE et al.,
+2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf).
+\begin{equation}
+    i(s, t) = Gini(t) - p_l Gini(t_l) - p_r Gini(t_r) \\
+p(t) = \frac{N_{l|r}}{N_t}
+\end{equation}
+
+#### Decrease Mean Importance
+
+Para
+calcular a importância de uma feature X ao tentar predizer uma label Y, utiliza-
+se os indices de impureza com a proporção de $N_f$ amostras em relação ao total
+$N$. $N_T$ é o total de árvores na floresta. Assim, para uma Random Forest a
+conta é:
+
+\begin{equation}
+    I(X_m) = \frac{1}{N_T} \sum_{T} \sum_{t \epsilon
+T:v(s)=X_m} pf(t)i(s,t) \\
+    pf(f) = \frac{N_f}{N}
+\end{equation}
+
 ```python
 fig, axis = plt.subplots(figsize=(15, 5))
 plot = axis.bar(df_train.columns, rfclf.feature_importances_)
