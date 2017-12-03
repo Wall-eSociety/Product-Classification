@@ -147,39 +147,71 @@ averiguar a performance do modelo.
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import StandardScaler 
 
-X = df_train.iloc[:, :].values
-y = df_target.iloc[:, -1].values
+X = df_train
+y = df_target.categories
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 ```
 
-## XGBoost
-
-### *eXtreme Gradient Boost*
-
-XGBoost é um algoritmo que implementa
-*gradient boosting* de Decision Trees de
-forma rápida e com alta performance.
-**Gradient Boosting** é uma técnica de *machine learning* para problemas de
-regressão e classificação que produz um modelo de predição na forma de
-*ensemble* de modelos de predições fracas, normalmente árvores de decisões.
+### Feature Scaling
 
 ```python
-%%time
-from xgboost import XGBClassifier
+sc_X = StandardScaler()
+sc_X_train = sc_X.fit_transform(X_train)
+sc_X_test = sc_X.transform(X_test)
+```
 
-classifier = XGBClassifier()
-classifier.fit(X_train, y_train)
+Feature scaling foi aplicado nos dataframes de **features** e utilizado nos
+modelos, mas o resultado não apresentou mudança. Os modelos continuaram com
+exatamente as mesmas performances.
 
-y_pred = classifier.predict(X_test)
+### Confusion Matrix
 
-cm = confusion_matrix(y_test, y_pred)
+Plot para matriz de confusão encontrado em
+[Scikit](http://scikit-
+learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html#sphx-
+glr-auto-examples-model-selection-plot-confusion-matrix-py) e adaptado para o
+problema
 
-accuracies = cross_val_score(estimator=classifier, X=X_train, y=y_train, cv=10)
-print('Média: %.2f' % accuracies.mean())
-print('Desvio padrão: %.4f' % accuracies.std())
-print('Matriz de confusao:\n', cm)
+```python
+import itertools
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.metrics import confusion_matrix
+
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix, without normalization')
+   
+    plt.figure(figsize=(11, 7))
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+    
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.show()
 ```
 
 ## Modelo Dummy Classifier
@@ -195,23 +227,78 @@ com outros modelos.
 ```python
 from sklearn.dummy import DummyClassifier
 
-models = ['most_frequent', 'stratified']
+def dummies(X_train, y_train, X_test, y_test):
+    models = ['most_frequent', 'stratified']
 
-for model in models:
-    clf = DummyClassifier(strategy=model)
-    clf.fit(X_train, y_train)
-    score = clf.score(X_train, y_train)
-    y_pred = clf.predict(X_test)
+    for model in models:
+        clf = DummyClassifier(strategy=model)
+        clf.fit(X_train, y_train)
+        score = clf.score(X_train, y_train)
+        y_pred = clf.predict(X_test)
+        cm = confusion_matrix(y_test, y_pred)
+        
+        plot_confusion_matrix(cm, classes=model)
+
+        # Cross validation
+        accuracies = cross_val_score(estimator=clf, X=X_train, y=y_train, cv=10)
+        print(model, 'train dataset score: %.2f' % score)
+        print('Média: %.2f' % accuracies.mean())
+        print('Desvio padrão: %.4f' % accuracies.std())
+
+dummies(X_train, y_train, X_test, y_test)
+```
+
+# Gradient Descent
+
+![](http://matthewemery.ca/images/gradient_descent.gif)
+
+## XGBoost
+
+### *eXtreme Gradient Boost*
+
+XGBoost é um algoritmo que implementa
+*gradient boosting* de Decision Trees de
+forma rápida e com alta performance.
+**Gradient Boosting** é uma técnica de *machine learning* para problemas de
+regressão e classificação que produz um modelo de predição na forma de
+*ensemble* de modelos de predições fracas, normalmente árvores de decisões.
+Boosting é um processo sequencial, mas como o `XGBoost` consegue implementá-lo
+de forma paralela?
+Sabemos que cada árvore pode ser produzida apenas depois que
+produzida a árvore anterior, mas o processo de criar as árvores pode ser
+paralelizado utilizando todos os núcleos a disposição.
+
+```python
+%%time
+from xgboost import XGBClassifier
+
+def xgboost(X_train, y_train, X_test, y_test):    
+    xgbclf = XGBClassifier(
+        learning_rate=0.01,
+        n_estimators=140,
+        max_depth=4,
+        min_child_weight=6,
+        gamma=0,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        nthread=8,
+        scale_pos_weight=1
+        )
+    
+    xgbclf.fit(X_train, y_train)
+    train_score = xgbclf.score(X_train, y_train)
+    y_pred = xgbclf.predict(X_test)
+
     cm = confusion_matrix(y_test, y_pred)
+    
+    plot_confusion_matrix(cm, classes=xgbclf)
 
-    # Cross validation
-    accuracies = cross_val_score(estimator=clf, X=X_train, y=y_train, cv=10)
-    print('Média: %.2f' % accuracies.mean())
+    accuracies = cross_val_score(estimator=xgbclf, X=X_train, y=y_train, cv=10)
+    print('Resultado na base de treino %.2f' % train_score)
+    print('Resultado Médio na base de teste: %.2f' % accuracies.mean())
     print('Desvio padrão: %.4f' % accuracies.std())
-
-    # Confusion matrix
-    print('Matriz de confusao de', model, '\n', cm)
-    print(model, 'score: %.2f' % score)
+    
+xgboost(X_train, y_train, X_test, y_test)
 ```
 
 ## GridSearchCV
@@ -220,16 +307,36 @@ forma exaustiva candidatos a partir de um grid de  parâmetros especificados com
 o atributo param_grid.
 
 ```python
-params = [{'max_depth': [40, 50, 60, 80, 100, 120],
-           'max_features': [70, 80, 90, 92],
-           'min_samples_leaf': [2, 5, 10, 20, 30, 40]}]
-```
+dt_params = [{
+    'max_depth': [40, 50, 60, 80, 100, 120],
+    'max_features': [70, 80, 90, 92],
+    'min_samples_leaf': [2, 5, 10, 20, 30, 40]
+}]
 
-Aplicando GridSearchCV ao Decision Tree Classifier:
+xgb_params = [{
+    'max_depth': [4, 5, 6],
+    'min_child_weight': [4, 5, 6]
+}]
+
+xgb_add_params = [{
+    'learning_rate': 0.1, 
+    'n_estimators': 140, 
+    'max_depth': 5,
+    'min_child_weight': 2, 
+    'gamma': 0, 
+    'subsample': 0.8, 
+    'colsample_bytree': 0.8,
+    'objective': 'binary:logistic', 
+    'nthread': 8, 
+    'scale_pos_weight': 1,
+    'seed': 27
+}]
+```
 
 ```python
 %%time
 from sklearn.model_selection import GridSearchCV
+from sklearn.tree import DecisionTreeClassifier
 
 def search_params(classifier, params):
     clf = classifier()
@@ -241,8 +348,22 @@ def search_params(classifier, params):
     grid_search = grid_search.fit(X_train, y_train)
     print(grid_search.best_score_, grid_search.best_params_)
     return grid_search.best_score_
+```
 
-search_params(DecisionTreeClassifier, params)
+### Aplicando GridSearchCV ao XGBClassifier:
+
+```python
+%%time
+from xgboost import XGBClassifier
+
+# Takes long time to run
+search_params(XGBClassifier, xgb_params)
+```
+
+Aplicando GridSearchCV ao Decision Tree Classifier:
+
+```python
+search_params(DecisionTreeClassifier, dt_params)
 ```
 
 ## Decision Tree
@@ -251,7 +372,6 @@ search_params(DecisionTreeClassifier, params)
 
 ```python
 from sklearn.model_selection import cross_val_score
-from sklearn.tree import DecisionTreeClassifier
 
 def fit_tree(X, Y):
     tree_classifier = DecisionTreeClassifier(max_features=70, min_samples_leaf=10, max_depth=40)
@@ -353,11 +473,11 @@ Utilizando o algoritmo
 
 ```python
 from sklearn.ensemble import RandomForestClassifier
-clf = RandomForestClassifier(n_estimators=10, max_features=70, min_samples_leaf=10, max_depth=40)
-clf = clf.fit(X_train, y_train)
+rfclf = RandomForestClassifier(n_estimators=10, max_features=70, min_samples_leaf=10, max_depth=40)
+rfclf = rfclf.fit(X_train, y_train)
 
-train_score = clf.score(X_train, y_train)
-test_score = cross_val_score(clf, X_train, y_train)
+train_score = rfclf.score(X_train, y_train)
+test_score = cross_val_score(rfclf, X_train, y_train)
 
 train_score
 test_score
@@ -371,12 +491,11 @@ maior é a importância da feature.
 
 ```python
 fig, axis = plt.subplots(figsize=(15, 5))
-plot = axis.bar(x_train.columns, clf.feature_importances_)
-plot = axis.set_xticklabels(x_train.columns.values, rotation='vertical')
+plot = axis.bar(df_train.columns, rfclf.feature_importances_)
+plot = axis.set_xticklabels(df_train.columns.values, rotation='vertical')
 plot = axis.set_xlabel('feature')
 plot = axis.set_ylabel('importance')
 plt.show()
-
 ```
 
 ## Verificando a acurácia com os dados de treinamento
@@ -387,7 +506,7 @@ para predição nos dá
 noção se o modelo pode estar viciado.
 
 ```python
-print ("{} de precisão".format(clf.score(X_train, y_train) * 100))
+print ("{} de precisão".format(rfclf.score(X_train, y_train) * 100))
 ```
 
 ## Verificando com Cross Validation
@@ -398,7 +517,7 @@ com o resto dos dados que não fazem parte
 deste dataset.
 
 ```python
-rfscores = cross_val_score(clf, X_train, y_train)
+rfscores = cross_val_score(rfclf, X_train, y_train)
 print ("{} de precisão".format(rfscores.mean() * 100))
 
 ```
@@ -415,7 +534,7 @@ learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
 from sklearn.ensemble import ExtraTreesClassifier
 
 etc = ExtraTreesClassifier();
-etscores = cross_val_score(clf, X_train, y_train)
+etscores = cross_val_score(rfclf, X_train, y_train)
 extra_tree_fit = etc.fit(X_train, y_train)
 print ("{} de precisão".format((etscores.mean() * 100)))
 print(extra_tree_fit.score(X_train, y_train))
@@ -442,5 +561,6 @@ Estimativa: 10 min com I7 3.1  8Ram
 
 # Referências Bibliográficas
 http://scikit-
-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.h
-tml#sklearn.dummy.DummyClassifier
+learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier
+https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-
+xgboost-with-codes-python/
