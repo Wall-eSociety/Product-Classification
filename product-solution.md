@@ -35,11 +35,13 @@ entre as features. Visto que há um total de 93 colunas que não foi
 disponibilizada nenhuma informação sobre o que são elas e o que representam e
 portanto, esta análize ajudará a identificar as relações entre as features.
 
-## Correlação
+##
+Correlação
 
 A correlação entre duas variáveis é quando existe algum laço
 matemático que envolve o valor de duas variáveis de alguma forma [ESTATÍSTICA II
-- [CORRELAÇÃO E REGRESSÃO](http://www.ctec.ufal.br/professor/mgn/05CorrelacaoERegressao.pdf).
+- [CORRELAÇÃO E
+REGRESSÃO](http://www.ctec.ufal.br/professor/mgn/05CorrelacaoERegressao.pdf).
 Uma das maneiras mais simples de se identificar a correlação entre duas
 variáveis é plotando-as em um gráfico, para tentar identificar alguma relação
 entre elas, entretanto, como são um total de 93 features, dificulta visualizar a
@@ -82,7 +84,8 @@ correlation
 A partir da matriz de correlação assima, buscamos agora
 identificar quais das colunas possuem uma forte correlação de acordo com a
 tabela a seguir.
-Como sugerido por [Makuka,2012](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3576830/)
+Como sugerido por
+[Makuka,2012](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3576830/)
 <center>Interpretação do resultado de correlação </center>
 
 |Valor
@@ -182,7 +185,8 @@ amostras. Basicamente elabora-se uma matriz em que nas colunas e linhas são as
 possíveis classes. Cada célula traz a contagem de amostras que eram da Label X
 (coluna) e foram classificadas na Label Y (linha). Dessa forma, na matriz, a
 diagonal principal trará os acertos do classificador
-[Microsoft](https://docs.microsoft.com/pt-br/sql/analysis-services/data-mining/classification-matrix-analysis-services-data-mining). Veja o exemplo a
+[Microsoft](https://docs.microsoft.com/pt-br/sql/analysis-services/data-
+mining/classification-matrix-analysis-services-data-mining). Veja o exemplo a
 seguir:
 
 |Classificador\Real|Label 1|Label 2|Label 3|
@@ -192,7 +196,9 @@ seguir:
 |**Label 3**|0|0|3|
 
 Plot para matriz de confusão encontrado em
-[Scikit](http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html#sphx-glr-auto-examples-model-selection-plot-confusion-matrix-py) e adaptado para o
+[Scikit](http://scikit-
+learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html#sphx-
+glr-auto-examples-model-selection-plot-confusion-matrix-py) e adaptado para o
 problema
 
 ```python
@@ -246,7 +252,8 @@ com outros modelos.
 
 * **Stratified**: realiza predições baseadas na
 distribuição das classes da base de treino. (Ex.: 10% A, 20% B, 50% C, 20% D)
-* **Most Frequent**: sempre prediz com a classe mais frequente na base de treino
+*
+**Most Frequent**: sempre prediz com a classe mais frequente na base de treino
 
 ```python
 from sklearn.dummy import DummyClassifier
@@ -276,7 +283,8 @@ dummies(X_train, y_train, X_test, y_test)
 
 ![](http://matthewemery.ca/images/gradient_descent.gif)
 
-## XGBoost
+##
+XGBoost
 
 ### *eXtreme Gradient Boost*
 
@@ -416,7 +424,8 @@ no método de montagem random forest. Este modelo de predição possui um proble
 de viés quando uma das classes na base de treino é mais predominante do que
 outra, ou seja, a distribuição das classes na base de treino devem ser
 semelhantes para evitar problemas de
-[overfiting](http://docs.aws.amazon.com/machine-learning/latest/dg/model-fit-underfitting-vs-overfitting.html).
+[overfiting](http://docs.aws.amazon.com/machine-learning/latest/dg/model-fit-
+underfitting-vs-overfitting.html).
 
 Para tanto, precisa-se descobrir qual a
 contagem de cada classe disponível na base de treino, montaremos um histograma
@@ -478,19 +487,18 @@ com mais votos ganha e o resultado é
 dado.
 
 ![Workflow Randomforest](forest.jpg)
-
 De acordo com breiman, 2001, as RFs corrigem a maior parte
 dos problemas de
 Overfitting que as Árvores de decisão apresentam. Tudo depende
 do quanto as DT
 contidas dentro da Random Forest. Isto é, o quanto elas
 representam os dados.
-
 Referências:
 [BREIMAN](https://www.stat.berkeley.edu/users/breiman/randomforest2001.pdf),
 Leo. Random forests. Machine learning, v. 45, n. 1, p. 5-32, 2001.
 
-## Utilizando o algoritmo
+##
+Utilizando o algoritmo
 
 ```python
 from sklearn.ensemble import RandomForestClassifier
@@ -515,20 +523,26 @@ maior é a importância da feature.
 O método utilizado para gerar a
 importância das features no modelo é a Decrease Mean Importance, que utiliza em
 seus cálculos um indicador de impureza no sistema. No caso do random forest
-implementado [(LOUPPE et al.,2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf),
+implementado [(LOUPPE et
+al.,2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf),
 este indicador é o Gini Impurity que pode ser entendido como uma redução da
 probabilidade de errar a classificação de uma categoria dentro de um algorítmo
-de árvore [(Sebastian Raschaka)](https://sebastianraschka.com/faq/docs/decision-tree-binary.html).
+de árvore [(Sebastian Raschaka)](https://sebastianraschka.com/faq/docs/decision-
+tree-binary.html).
 
 #### O indice
 O indice de Gini pode ser calculado utilizando
-a seguinte fórmula[(TEKIMONO,2009)](http://people.revoledu.com/kardi/tutorial/DecisionTree/how-to-measure-impurity.htm):
+a seguinte
+fórmula[(TEKIMONO,2009)](http://people.revoledu.com/kardi/tutorial/DecisionTree/how-
+to-measure-impurity.htm):
 
 \begin{equation}
     Gini = 1- \sum_{i=1} p_i^2
 \end{equation}
-Em que $p_i$ é a probabilidade da ocorrência de uma determinada classe,
-desconsiderando os atributos. Ou seja $N_i$ é o número de ocorrências da classe
+Em que $p_i$ é a probabilidade da ocorrência de uma determinada
+classe,
+desconsiderando os atributos. Ou seja $N_i$ é o número de ocorrências da
+classe
 i e N é o total de elementos das classes:
 
 \begin{equation}
@@ -543,7 +557,8 @@ Regression Trees (CART), utiliza-se o indice de Gini modificado, isto é,
 calcula-se ainda as probabilidades em $p_i$, mas agora utiliza-se do indice de
 Gini nos filhos da esquerda $t_l$ e direita $t_r$. Recalcula-se as
 probabilidades para ambos os nós também em $p_l$ e $p_r$ utilizando como base as
-possíveis classes reduzidas a $N_t$ [(LOUPPE et al.,2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf).
+possíveis classes reduzidas a $N_t$ [(LOUPPE et
+al.,2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf).
 \begin{equation}
     i(s, t) = Gini(t) - p_l Gini(t_l) - p_r Gini(t_r) \\
 p(t) =
@@ -601,9 +616,11 @@ print ("{} de precisão".format(rfscores.mean() * 100))
 
 ## ExtraTrees
 
-O [Scikit Learn](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html)
+O [Scikit Learn](http://scikit-
+learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html)
 nos apresenta um tipo diferente de random forest que pode apresentar resultados
-melhores que o [RandomForestClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
+melhores que o [RandomForestClassifier](http://scikit-
+learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
 
 ```python
 from sklearn.ensemble import ExtraTreesClassifier
@@ -652,9 +669,18 @@ print('Saida redes neurais: ', saidas)
 print('Saida desejada', y_test)
 print(trac)
 print('Score: ', mlp.score(X_test, y_test))
+print(trac)
+```
 
+```python
+from sklearn.metrics import classification_report, confusion_matrix
+print(confusion_matrix(y_test,saidas),"\n")
+print(trac,"\n")
+print(classification_report(y_test,saidas))
 ```
 
 # Referências Bibliográficas
-http://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier
-https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgboost-with-codes-python/
+http://scikit-
+learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier
+https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-
+xgboost-with-codes-python/
