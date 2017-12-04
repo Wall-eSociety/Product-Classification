@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 from pandas.plotting import scatter_matrix
 import numpy as np
 import math
+from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.neural_network import MLPClassifier
+
 ```
 
 ```python
@@ -651,6 +654,35 @@ Estimativa: 10 min com I7 3.1  8Ram
 #print ("%")
 ```
 
+## Neurônio Artificial
+
+![Workflow NeuralNetwork](neural.jpg)
+
+#### Entrada
+-
+Sinais de entrada {x1,x2,...,xn}.
+- Cada sinal de entrada e ponderado por 1
+peso.{w1,w2,...,wn}.
+- O peso é adquirido a partir do treino.
+
+#### Função
+agregadora
+- Recebe todos os sinais e realiza a soma dos produtos dos sinais.
+#### Neurônio
+- Tem a função de deixar, passar ou inibir um sinal de saida de
+acordo com a entrada.
+- Teta é a limiar de ativacao(ponderado),'u' é o potencial
+de ativação que é passado para a função (g(u)), que é a função de ativação que é
+responsavel pela saida que permite o sinal passar ou não ou até mesmo
+modificalo.
+
+#### Formula
+
+- Potencial de ativação
+
+![Workflow
+Potencialdeativacao](formula.png)
+
 ### MLP Classifier
 Esse algoritmo é um classificador Perceptron de Multicamadas
 usado para fazer o
@@ -662,21 +694,22 @@ from sklearn.neural_network import MLPClassifier
 mlp = MLPClassifier()
 mlp.fit(X_train, y_train)
 saidas = mlp.predict(X_test)
-trac = "---------------------------------------------------"
+scoreTreino =  mlp.score(X_train, y_train)
+scoreTeste =  mlp.score(X_test, y_test)
 
-print(trac)
-print('Saida redes neurais: ', saidas)
-print('Saida desejada', y_test)
-print(trac)
-print('Score: ', mlp.score(X_test, y_test))
-print(trac)
+print('Score treino: ', scoreTreino)
+print('Score teste: ', scoreTeste)
 ```
 
 ```python
-from sklearn.metrics import classification_report, confusion_matrix
-print(confusion_matrix(y_test,saidas),"\n")
-print(trac,"\n")
-print(classification_report(y_test,saidas))
+from sklearn.neural_network import MLPClassifier
+
+mp = confusion_matrix(y_test,saidas);
+plot_confusion_matrix(mp, classes=model)
+```
+
+```python
+print(div,classification_report(y_test,saidas))
 ```
 
 # Referências Bibliográficas
