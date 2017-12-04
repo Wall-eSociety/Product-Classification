@@ -1,3 +1,36 @@
+# Otto Group Product Classification
+
+Este notebook é uma proposta de solução
+utilizando técnicas de data-mining e machine learn para o problema de
+classificação de produtos da companhia Otto disponíveis em: [Kaggle (challenge):
+Otto group product classification](https://www.kaggle.com/c/otto-group-product-
+classification-challenge)
+
+## Contexto
+
+Retirado da descrição do problema, temos
+que o grupo Otto é uma das maiores companhias de *e-commerce* do mundo, e possui
+s filiais em mais de 20 paises. Vendem milhões de produtos ao redor do mundo
+todos os dias com centezas de produtos sendo adicionados constantemente.
+
+A
+análise de consistência da performance dos produtos deles é crucial, entretando,
+com a infraestrutura de escala global que possuem, produtos identicos são
+classifidados de maneira diferenciada. Entretanto a análise da qualidade dos
+produtos depende fortemente da acurácia na habilidade de agrupar produtos
+semelhantes. Quanto melhor for a classificação, mais intuitivamente eles ter um
+maior alcance com seus produtos.
+
+## Dados
+
+Foram disponibilizados 2 bases de
+dados separadas. A primeira delas contém 61878 registros com rótulo da
+classificação do produto e 144368 de registros sem o rótulo.
+
+São um total de 93
+características na qual não há a descrição do que significa cada uma delas.
+Sendo que não há dados faltando. O range dos dados vão de 0 a 352.
+
 ```python
 # Configure to show multiples outputs from a single cell
 from IPython.core.interactiveshell import InteractiveShell
@@ -23,6 +56,26 @@ df_target.head() # Show target classes
 df_train.head() # The train dataset
 df_test.head() # It hasn't target
 ```
+
+# Cross Validation
+
+A abordagem para a Validação Cruzada é a utilização do
+método de k-partições. Neste método, o conjunto de dados é dividido em k
+partições [(WITTEN e FRANK,
+2000)](ftp://ftp.ingv.it/pub/manuela.sbarra/Data%20Mining%20Practical%20Machine%20Learning%20Tools%20and%20Techniques%20-%20WEKA.pdf),
+testes extensivos em diversas bases de dados, utilizando diversos algoritmos,
+identificaram o valor de k para identificar a melhor margem de erro como sendo
+10, também de forma randômica. Então, o conjunto de dados de treinamento é
+criado com k – 1 partições, e apenas uma partição é utilizada para testes. São
+realizadas k iterações, aonde cada partição é utilizada uma vez para testes
+enquanto as outras são utilizadas para treinamento. Após todas as partições
+terem sido utilizadas para teste, a margem de erro de cada iteração é somada e a
+média das k iterações se torna a margem de erro do modelo.
+
+![cross
+val](crossval.png)
+<center>Representação do método Cross Validation com k = 10.
+**Fonte**: BABATUNDE et al., 2015.</center>
 
 # Tratamento
 
@@ -137,7 +190,7 @@ features, entretanto, há 10 colunas que estão fortemente correlacionadas. Pore
 buscamos uma correlação fortíssima para não remover features com comportamentos
 diferentes.
 
-## Train/Test split
+# Train/Test split
 
 Utilizaremos 80% da base de treino para
 efetivamente treinar o modelo e 20% para
@@ -619,7 +672,16 @@ O [Scikit Learn](http://scikit-
 learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html)
 nos apresenta um tipo diferente de random forest que pode apresentar resultados
 melhores que o [RandomForestClassifier](http://scikit-
-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
+learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html).
+Assim como afirma que as extra tree devem ser utilizadas apenas em algorítmos de
+montagem Como o Extra Trees Classifier e Regressor.
+
+O que diferencia uma extra
+tree de uma decision tree é a forma que é feita a construção da árvore. Enquanto
+uma decision tree utiliza cópia dos dados e sub amostras para realizar as
+divisões de cada nó. Uma extra tree utiliza um ponto de divisão randomico e
+utiliza toda a base de treino para crescer a árvore [(GEURTS, ERNST e WEHENKEL,
+2005)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.65.7485&rep=rep1&type=pdf).
 
 ```python
 from sklearn.ensemble import ExtraTreesClassifier
@@ -627,6 +689,7 @@ from sklearn.ensemble import ExtraTreesClassifier
 etc = ExtraTreesClassifier();
 etscores = cross_val_score(rfclf, X_train, y_train)
 extra_tree_fit = etc.fit(X_train, y_train)
+
 print ("{} de precisão".format((etscores.mean() * 100)))
 print(extra_tree_fit.score(X_train, y_train))
 ```
@@ -655,3 +718,9 @@ http://scikit-
 learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier
 https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-
 xgboost-with-codes-python/
+
+ 
+BABATUNDE, Oluleye, ARMSTRONG, Leisa, DIEPEVEEN,
+Dean e LENG, J. Comparative analysis of Genetic Algorithm and Particle Swam
+Optimization: An application in precision agriculture. 2015. **Asian Journal of
+Computer and Information Systems**. 3. 1-12.
