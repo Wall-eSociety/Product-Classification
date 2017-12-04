@@ -325,25 +325,74 @@ def dummies(X_train, y_train, X_test, y_test):
 dummies(X_train, y_train, X_test, y_test)
 ```
 
-# Gradient Descent
+#  XGBoost
+
+XGBoost é um algoritmo que implementa
+*gradient boosting* de
+Decision Trees de
+forma rápida e com alta performance.
+**Gradient Boosting** é
+uma técnica de *machine learning* para problemas de
+regressão e classificação
+que produz um modelo de predição na forma de
+*ensemble* de modelos de predições
+fracas, normalmente árvores de decisões.
+Boosting é um processo sequencial, mas
+como o `XGBoost` consegue implementá-lo
+de forma paralela?
+Sabemos que cada
+árvore pode ser produzida apenas depois que
+produzida a árvore anterior, mas o
+processo de criar as árvores pode ser
+paralelizado utilizando todos os núcleos a
+disposição.
+
+## Boosting
+
+A definição de boosting é que até mesmo algorítmos
+fracos de machine larning podem se tornar potentes [(KEARNS,
+1988)](https://www.cis.upenn.edu/~mkearns/papers/boostnote.pdf).
+
+Um algorítmo
+fraco de aprendizagem pode ser definido como modelos ou regras que não possuem
+boa acurácia ou aparentam ser ineficientes, tais como modelos *dummy*: mais
+frequente, estratificado, randômico. Já algorítmos de aprendizagem forte, são
+aqueles que apresentam uma boa taxa de acertos [(FREUND e
+SCHAPIRE)](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=4BF3325D8222B3234BB95971FCAD8759?doi=10.1.1.56.9855&rep=rep1&type=pdf).
+**Exemplo - Corrida de cavalos**[(FREUND e
+SCHAPIRE)](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=4BF3325D8222B3234BB95971FCAD8759?doi=10.1.1.56.9855&rep=rep1&type=pdf):
+Como determinar em qual cavalor apostar, considerando um conjunto de dados
+disponíveis tais como informações do cavalo, do dono, das corridas anteriores e
+etc. Ao perguntar para especialistas cada um deles irá falar coisas distintas e
+ainda assim muito imprecisas (modelos fracos)! Mas seria possível utilizar as
+regras de aposta de cada especialista e gerar uma única regra que seja capaz de
+predizer o cavalor vencedor da corrida utilizando boost 
+    
+## Gradient
+descent
 
 ![](http://matthewemery.ca/images/gradient_descent.gif)
 
-## XGBoost
+Um algorítmo
+de gradient descendent é uma forma de minimizar o valor de uma função
+interativamente, na qual são dados um conjunto de parametros e ela busca a
+partir daí o menor valor[(TOUSSAINT, 2012)](https://ipvs.informatik.uni-
+stuttgart.de/mlr/marc/notes/gradientDescent.pdf). De forma que:
+\begin{equation}
+    y_{min} = F(x_1) > F(x_2) > F(x_3) > ... > F(x_n),\ onde:\
+F(x_n) < precisão
+\end{equation}
 
-### *eXtreme Gradient Boost*
+Um pseudo algorítmo que pode ser proposto para
+um problema de gradient é:
 
-XGBoost é um algoritmo que implementa
-*gradient boosting* de Decision Trees de
-forma rápida e com alta performance.
-**Gradient Boosting** é uma técnica de *machine learning* para problemas de
-regressão e classificação que produz um modelo de predição na forma de
-*ensemble* de modelos de predições fracas, normalmente árvores de decisões.
-Boosting é um processo sequencial, mas como o `XGBoost` consegue implementá-lo
-de forma paralela?
-Sabemos que cada árvore pode ser produzida apenas depois que
-produzida a árvore anterior, mas o processo de criar as árvores pode ser
-paralelizado utilizando todos os núcleos a disposição.
+    x = inital_value
+    step = 0.01
+    repita
+xprev=x
+        x = xperv - step * F(xprev)
+    enquanto abs(x - xprev) >
+precisao
 
 ```python
 %%time
@@ -361,15 +410,18 @@ def xgboost(X_train, y_train, X_test, y_test):
         nthread=8,
         scale_pos_weight=1
         )
-
+    print('XGBoost fit')
     xgbclf.fit(X_train, y_train)
+    print('XGBoost train score')
     train_score = xgbclf.score(X_train, y_train)
+    print('XGBoost test score')
     y_pred = xgbclf.predict(X_test)
 
+    print('XGBoost confusion matrix')
     cm = confusion_matrix(y_test, y_pred)
 
     plot_confusion_matrix(cm, classes=xgbclf)
-
+    print('XGBoost cross validation')
     accuracies = cross_val_score(estimator=xgbclf, X=X_train, y=y_train, cv=10)
     print('Resultado na base de treino %.2f' % train_score)
     print('Resultado Médio na base de teste: %.2f' % accuracies.mean())
