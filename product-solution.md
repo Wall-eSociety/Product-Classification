@@ -79,20 +79,26 @@ val](crossval.png)
 
 # Tratamento
 
-Será realizada as etapas de feature selection e feature
+Será realizada as
+etapas de feature selection e feature
 engineering.
 Correlação entre features
-
 Será realizada uma análise da correlação
-entre as features. Visto que há um total de 93 colunas que não foi
-disponibilizada nenhuma informação sobre o que são elas e o que representam e
-portanto, esta análize ajudará a identificar as relações entre as features.
+entre as features. Visto que há um
+total de 93 colunas que não foi
+disponibilizada nenhuma informação sobre o que
+são elas e o que representam e
+portanto, esta análize ajudará a identificar as
+relações entre as features.
 
 ## Correlação
 
-A correlação entre duas variáveis é quando existe algum laço
-matemático que envolve o valor de duas variáveis de alguma forma [ESTATÍSTICA II
-- [CORRELAÇÃO E REGRESSÃO](http://www.ctec.ufal.br/professor/mgn/05CorrelacaoERegressao.pdf).
+A correlação entre duas variáveis é
+quando existe algum laço
+matemático que envolve o valor de duas variáveis de
+alguma forma [ESTATÍSTICA II
+- [CORRELAÇÃO E
+REGRESSÃO](http://www.ctec.ufal.br/professor/mgn/05CorrelacaoERegressao.pdf).
 Uma das maneiras mais simples de se identificar a correlação entre duas
 variáveis é plotando-as em um gráfico, para tentar identificar alguma relação
 entre elas, entretanto, como são um total de 93 features, dificulta visualizar a
@@ -135,7 +141,8 @@ correlation
 A partir da matriz de correlação assima, buscamos agora
 identificar quais das colunas possuem uma forte correlação de acordo com a
 tabela a seguir.
-Como sugerido por [Makuka,2012](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3576830/)
+Como sugerido por
+[Makuka,2012](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3576830/)
 <center>Interpretação do resultado de correlação </center>
 
 |Valor
@@ -235,7 +242,8 @@ amostras. Basicamente elabora-se uma matriz em que nas colunas e linhas são as
 possíveis classes. Cada célula traz a contagem de amostras que eram da Label X
 (coluna) e foram classificadas na Label Y (linha). Dessa forma, na matriz, a
 diagonal principal trará os acertos do classificador
-[Microsoft](https://docs.microsoft.com/pt-br/sql/analysis-services/data-mining/classification-matrix-analysis-services-data-mining). Veja o exemplo a
+[Microsoft](https://docs.microsoft.com/pt-br/sql/analysis-services/data-
+mining/classification-matrix-analysis-services-data-mining). Veja o exemplo a
 seguir:
 
 |Classificador\Real|Label 1|Label 2|Label 3|
@@ -245,7 +253,9 @@ seguir:
 |**Label 3**|0|0|3|
 
 Plot para matriz de confusão encontrado em
-[Scikit](http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html#sphx-glr-auto-examples-model-selection-plot-confusion-matrix-py) e adaptado para o
+[Scikit](http://scikit-
+learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html#sphx-
+glr-auto-examples-model-selection-plot-confusion-matrix-py) e adaptado para o
 problema
 
 ```python
@@ -299,7 +309,8 @@ com outros modelos.
 
 * **Stratified**: realiza predições baseadas na
 distribuição das classes da base de treino. (Ex.: 10% A, 20% B, 50% C, 20% D)
-* **Most Frequent**: sempre prediz com a classe mais frequente na base de treino
+*
+**Most Frequent**: sempre prediz com a classe mais frequente na base de treino
 
 ```python
 from sklearn.dummy import DummyClassifier
@@ -379,20 +390,23 @@ interativamente, na qual são dados um conjunto de parametros e ela busca a
 partir daí o menor valor[(TOUSSAINT, 2012)](https://ipvs.informatik.uni-
 stuttgart.de/mlr/marc/notes/gradientDescent.pdf). De forma que:
 \begin{equation}
-    y_{min} = F(x_1) > F(x_2) > F(x_3) > ... > F(x_n),\ onde:\
+y_{min} = F(x_1) > F(x_2) > F(x_3) > ... > F(x_n),\ onde:\
 F(x_n) < precisão
 \end{equation}
 
 Um pseudo algorítmo que pode ser proposto para
-um problema de gradient é:
+um problema de
+gradient é:
 
     x = inital_value
     step = 0.01
+    
     repita
 xprev=x
-        x = xperv - step * F(xprev)
-    enquanto abs(x - xprev) >
-precisao
+            x = xperv - step * F(xprev)
+        enquanto abs(x - xprev)
+>
+    precisao
 
 ```python
 %%time
@@ -420,9 +434,9 @@ def xgboost(X_train, y_train, X_test, y_test):
     print('XGBoost confusion matrix')
     cm = confusion_matrix(y_test, y_pred)
 
-    plot_confusion_matrix(cm, classes=xgbclf)
     print('XGBoost cross validation')
     accuracies = cross_val_score(estimator=xgbclf, X=X_train, y=y_train, cv=10)
+    plot_confusion_matrix(cm, classes=xgbclf)
     print('Resultado na base de treino %.2f' % train_score)
     print('Resultado Médio na base de teste: %.2f' % accuracies.mean())
     print('Desvio padrão: %.4f' % accuracies.std())
@@ -497,7 +511,93 @@ search_params(DecisionTreeClassifier, dt_params)
 
 ## Decision Tree
 
-### Adicionar descrição de como funciona!!!!
+Os dados são separados recursivamente formando uma árvore de
+decisão baseada nas
+features.Pode-se definir uma árvore de decisão, conforme diz
+(MITCHELL, 1997),
+como um método para aproximar valores discretos em funções,
+onde a função de
+aprendizagem é representada por uma árvore de decisão. Tais
+árvores aprendidas
+podem ser representadas - a nível de código fonte - como
+conjuntos de estruturas
+condicionais "se-então" para melhorar a leitura e
+entendimento humano, de acordo
+com (MITCHELL, 1997).
+
+Estes algoritmos são muito
+utilizados, segundo (MITCHELL, 1997), na área de
+algoritmos de inferência
+indutiva, e dentre as aplicações de tais algoritmos,
+tem-se máquinas que
+aprenderam a diagnosticar casos da medicina, ou ainda, para
+avaliar o risco de
+inadimplência dos requerentes de créditos em bancos.
+
+Para visualizar de forma
+mais fácil a representação de uma árvore, a figura 3,
+representada abaixo,
+caracteriza uma árvore de decisão em que a máquina deve
+decidir com base nas
+variáveis do tempo (ensolarado, nublado ou chuvoso), se
+pode ou não ocorrer uma
+partida de tênis. Além das variáveis de tempo, tem-se
+outras variáveis que podem
+ser levadas em conta dependendo da condição climática local, como umidade (alta
+ou normal) e o vento (forte ou fraco).
+
+![Workflow Random
+forest](arvore_jogo_tenis.png)
+
+O algoritmo de árvores de decisão classifica
+instâncias ou dados, ordenando-os
+apartir da raiz da árvore, para os nós de suas
+folhas. Cada nó da árvore
+exemplifica uma pergunta (teste) de alguns - atributos
+- de instância, e cada
+ramo descendente de um nó corresponde para um dos
+possíveis valores de tal
+atributo (MITCHELL, 1997). Vale a pena citar: O
+algoritmo ID3 (QUINLAN, 1986)
+aprende sobre árvores de decisão construindo-as de
+cima para baixo (nó raiz para
+as ramificações) tentando buscar respostas para a
+pergunta "Qual atributo
+devemos testar na raiz da árvore?", sendo assim, cada
+atributo instanciado é
+calculado por meio de testes estatísticos, para
+determinar o quão bem (ótimo)
+tal atributo, isolado dos demais, classifica os
+exemplos de treinamento.
+
+Quando o melhor atributo é selecionado e utilizado
+como teste no nó principal da
+árvore, cria-se um descendente para cada valor
+admissível deste atributo e os
+exemplos de treinamento são sorteados para o nó
+filho mais apropriado. O
+processo inteiro é então repetido utilizando
+treinamentos associados a cada
+descendente para selecionar o melhor atributo
+para testar na árvore. Quando
+realizado dessa forma, o algoritmo tenta de forma
+“gulosa“3.4. O modelo 49
+Figura 3 – Exemplo de árvore de decisão, sobre
+condições para realização de um
+jogo de
+tênis.
+
+buscar uma árvore de decisão
+aceitável, onde o algoritmo nunca retrocede em
+reavaliar escolhas anteriores.
+Levando em consideração todas essas informações sobre Árvores de decisões
+podemos dizer que no contexto de predição da classificação de risto, as DTs são
+as mais adequadas. O que as tornam mais apropriadas ainda é a possibilidade de
+visualizar a árvore de decisão montada, o que reflete nas decisões que ela toma.
+Porém as Dts existem
+a muito tempo e ao longo do tempo foram criados
+melhoramentos para as árvores
+como as Random Forests.
 
 ```python
 from sklearn.model_selection import cross_val_score
@@ -521,7 +621,8 @@ no método de montagem random forest. Este modelo de predição possui um proble
 de viés quando uma das classes na base de treino é mais predominante do que
 outra, ou seja, a distribuição das classes na base de treino devem ser
 semelhantes para evitar problemas de
-[overfiting](http://docs.aws.amazon.com/machine-learning/latest/dg/model-fit-underfitting-vs-overfitting.html).
+[overfiting](http://docs.aws.amazon.com/machine-learning/latest/dg/model-fit-
+underfitting-vs-overfitting.html).
 
 Para tanto, precisa-se descobrir qual a
 contagem de cada classe disponível na base de treino, montaremos um histograma
@@ -583,18 +684,12 @@ com mais votos ganha e o resultado é
 dado.
 
 ![Workflow Randomforest](forest.jpg)
-
 De acordo com breiman, 2001, as RFs corrigem a maior parte
 dos problemas de
 Overfitting que as Árvores de decisão apresentam. Tudo depende
 do quanto as DT
 contidas dentro da Random Forest. Isto é, o quanto elas
 representam os dados.
-
-Referências:
-[BREIMAN](https://www.stat.berkeley.edu/users/breiman/randomforest2001.pdf),
-Leo. Random forests. Machine learning, v. 45, n. 1, p. 5-32, 2001.
-
 ## Utilizando o algoritmo
 
 ```python
@@ -620,20 +715,26 @@ maior é a importância da feature.
 O método utilizado para gerar a
 importância das features no modelo é a Decrease Mean Importance, que utiliza em
 seus cálculos um indicador de impureza no sistema. No caso do random forest
-implementado [(LOUPPE et al.,2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf),
+implementado [(LOUPPE et
+al.,2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf),
 este indicador é o Gini Impurity que pode ser entendido como uma redução da
 probabilidade de errar a classificação de uma categoria dentro de um algorítmo
-de árvore [(Sebastian Raschaka)](https://sebastianraschka.com/faq/docs/decision-tree-binary.html).
+de árvore [(Sebastian Raschaka)](https://sebastianraschka.com/faq/docs/decision-
+tree-binary.html).
 
 #### O indice
 O indice de Gini pode ser calculado utilizando
-a seguinte fórmula[(TEKIMONO,2009)](http://people.revoledu.com/kardi/tutorial/DecisionTree/how-to-measure-impurity.htm):
+a seguinte
+fórmula[(TEKIMONO,2009)](http://people.revoledu.com/kardi/tutorial/DecisionTree/how-
+to-measure-impurity.htm):
 
 \begin{equation}
     Gini = 1- \sum_{i=1} p_i^2
 \end{equation}
-Em que $p_i$ é a probabilidade da ocorrência de uma determinada classe,
-desconsiderando os atributos. Ou seja $N_i$ é o número de ocorrências da classe
+Em que $p_i$ é a probabilidade da ocorrência de uma determinada
+classe,
+desconsiderando os atributos. Ou seja $N_i$ é o número de ocorrências da
+classe
 i e N é o total de elementos das classes:
 
 \begin{equation}
@@ -648,7 +749,8 @@ Regression Trees (CART), utiliza-se o indice de Gini modificado, isto é,
 calcula-se ainda as probabilidades em $p_i$, mas agora utiliza-se do indice de
 Gini nos filhos da esquerda $t_l$ e direita $t_r$. Recalcula-se as
 probabilidades para ambos os nós também em $p_l$ e $p_r$ utilizando como base as
-possíveis classes reduzidas a $N_t$ [(LOUPPE et al.,2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf).
+possíveis classes reduzidas a $N_t$ [(LOUPPE et
+al.,2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf).
 \begin{equation}
     i(s, t) = Gini(t) - p_l Gini(t_l) - p_r Gini(t_r) \\
 p(t) =
@@ -706,7 +808,8 @@ print ("{} de precisão".format(rfscores.mean() * 100))
 
 ## ExtraTrees
 
-O [Scikit Learn](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html)
+O [Scikit Learn](http://scikit-
+learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html)
 nos apresenta um tipo diferente de random forest que pode apresentar resultados
 melhores que o [RandomForestClassifier](http://scikit-
 learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html).
@@ -774,12 +877,20 @@ print('Score: ', mlp.score(X_test, y_test))
 # Referências Bibliográficas
 http://scikit-
 learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier
-
 https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-
 xgboost-with-codes-python/
+[MITCHELL](https://dl.acm.org/citation.cfm?id=505283), Tom M. Machine learning.
+1997. Burr Ridge, IL: McGraw Hill, v. 45, n. 37, p. 870-877, 1997.
+[QUINLAN](http://hunch.net/~coms-4771/quinlan.pdf), J.. Ross . Induction of
+decision trees. Machine learning, v. 1, n. 1, p. 81-106, 1986.
+[BREIMAN](https://www.stat.berkeley.edu/users/breiman/randomforest2001.pdf),
+Leo. Random forests. Machine learning, v. 45, n. 1, p. 5-32, 2001.
 
-
-BABATUNDE, Oluleye, ARMSTRONG, Leisa, DIEPEVEEN,
-Dean e LENG, J. Comparative analysis of Genetic Algorithm and Particle Swam
-Optimization: An application in precision agriculture. 2015. **Asian Journal of
-Computer and Information Systems**. 3. 1-12.
+BABATUNDE,
+Oluleye, ARMSTRONG, Leisa, DIEPEVEEN,
+Dean e LENG, J. Comparative analysis of
+Genetic Algorithm and Particle Swam
+Optimization: An application in precision
+agriculture. 2015. **Asian Journal of
+Computer and Information Systems**. 3.
+1-12.
