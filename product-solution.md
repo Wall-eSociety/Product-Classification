@@ -35,28 +35,24 @@ entre as features. Visto que há um total de 93 colunas que não foi
 disponibilizada nenhuma informação sobre o que são elas e o que representam e
 portanto, esta análize ajudará a identificar as relações entre as features.
 
-##
-Correlação
+## Correlação
 
 A correlação entre duas variáveis é quando existe algum laço
 matemático que envolve o valor de duas variáveis de alguma forma [ESTATÍSTICA II
-- CORRELAÇÃO E
-REGRESSÃO](http://www.ctec.ufal.br/professor/mgn/05CorrelacaoERegressao.pdf).
+- [CORRELAÇÃO E REGRESSÃO](http://www.ctec.ufal.br/professor/mgn/05CorrelacaoERegressao.pdf).
 Uma das maneiras mais simples de se identificar a correlação entre duas
 variáveis é plotando-as em um gráfico, para tentar identificar alguma relação
 entre elas, entretanto, como são um total de 93 features, dificulta visualizar a
 correlação em forma gráfica.
 
 A correlação de
-[Pearson](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de%0
-A_Pearson)
+[Pearson](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de%0A_Pearson)
 mede o grau da correlação (e a direcção dessa correlação - se
 positiva ou
 negativa) entre duas variáveis de escala métrica (intervalar ou de
 rácio/razão).
 Já a correlação de
-[Spearman](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de_
-postos_de_Spearman)
+[Spearman](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de_postos_de_Spearman)
 entre duas variáveis é igual à correlação de Pearson entre
 os valores de postos
 daquelas duas variáveis. Enquanto a correlação de Pearson
@@ -86,8 +82,7 @@ correlation
 A partir da matriz de correlação assima, buscamos agora
 identificar quais das colunas possuem uma forte correlação de acordo com a
 tabela a seguir.
-Como sugerido por [Makuka,
-2012](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3576830/)
+Como sugerido por [Makuka,2012](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3576830/)
 <center>Interpretação do resultado de correlação </center>
 
 |Valor
@@ -147,7 +142,7 @@ averiguar a performance do modelo.
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix
-from sklearn.preprocessing import StandardScaler 
+from sklearn.preprocessing import StandardScaler
 
 X = df_train
 y = df_target.categories
@@ -187,8 +182,7 @@ amostras. Basicamente elabora-se uma matriz em que nas colunas e linhas são as
 possíveis classes. Cada célula traz a contagem de amostras que eram da Label X
 (coluna) e foram classificadas na Label Y (linha). Dessa forma, na matriz, a
 diagonal principal trará os acertos do classificador
-[Microsoft](https://docs.microsoft.com/pt-br/sql/analysis-services/data-
-mining/classification-matrix-analysis-services-data-mining). Veja o exemplo a
+[Microsoft](https://docs.microsoft.com/pt-br/sql/analysis-services/data-mining/classification-matrix-analysis-services-data-mining). Veja o exemplo a
 seguir:
 
 |Classificador\Real|Label 1|Label 2|Label 3|
@@ -198,9 +192,7 @@ seguir:
 |**Label 3**|0|0|3|
 
 Plot para matriz de confusão encontrado em
-[Scikit](http://scikit-
-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html#sphx-
-glr-auto-examples-model-selection-plot-confusion-matrix-py) e adaptado para o
+[Scikit](http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html#sphx-glr-auto-examples-model-selection-plot-confusion-matrix-py) e adaptado para o
 problema
 
 ```python
@@ -223,7 +215,7 @@ def plot_confusion_matrix(cm, classes,
         print("Normalized confusion matrix")
     else:
         print('Confusion matrix, without normalization')
-   
+
     plt.figure(figsize=(11, 7))
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
@@ -235,7 +227,7 @@ def plot_confusion_matrix(cm, classes,
         plt.text(j, i, format(cm[i, j], fmt),
                  horizontalalignment="center",
                  color="white" if cm[i, j] > thresh else "black")
-    
+
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
@@ -253,9 +245,8 @@ comparação
 com outros modelos.
 
 * **Stratified**: realiza predições baseadas na
-distribuição das classes da base de treino. (Ex.: 10% A, 20% B, 50% C, 20% D) 
-*
-**Most Frequent**: sempre prediz com a classe mais frequente na base de treino
+distribuição das classes da base de treino. (Ex.: 10% A, 20% B, 50% C, 20% D)
+* **Most Frequent**: sempre prediz com a classe mais frequente na base de treino
 
 ```python
 from sklearn.dummy import DummyClassifier
@@ -269,7 +260,7 @@ def dummies(X_train, y_train, X_test, y_test):
         score = clf.score(X_train, y_train)
         y_pred = clf.predict(X_test)
         cm = confusion_matrix(y_test, y_pred)
-        
+
         plot_confusion_matrix(cm, classes=model)
 
         # Cross validation
@@ -317,20 +308,20 @@ def xgboost(X_train, y_train, X_test, y_test):
         nthread=8,
         scale_pos_weight=1
         )
-    
+
     xgbclf.fit(X_train, y_train)
     train_score = xgbclf.score(X_train, y_train)
     y_pred = xgbclf.predict(X_test)
 
     cm = confusion_matrix(y_test, y_pred)
-    
+
     plot_confusion_matrix(cm, classes=xgbclf)
 
     accuracies = cross_val_score(estimator=xgbclf, X=X_train, y=y_train, cv=10)
     print('Resultado na base de treino %.2f' % train_score)
     print('Resultado Médio na base de teste: %.2f' % accuracies.mean())
     print('Desvio padrão: %.4f' % accuracies.std())
-    
+
 xgboost(X_train, y_train, X_test, y_test)
 ```
 
@@ -352,15 +343,15 @@ xgb_params = [{
 }]
 
 xgb_add_params = [{
-    'learning_rate': 0.1, 
-    'n_estimators': 140, 
+    'learning_rate': 0.1,
+    'n_estimators': 140,
     'max_depth': 5,
-    'min_child_weight': 2, 
-    'gamma': 0, 
-    'subsample': 0.8, 
+    'min_child_weight': 2,
+    'gamma': 0,
+    'subsample': 0.8,
     'colsample_bytree': 0.8,
-    'objective': 'binary:logistic', 
-    'nthread': 8, 
+    'objective': 'binary:logistic',
+    'nthread': 8,
     'scale_pos_weight': 1,
     'seed': 27
 }]
@@ -377,7 +368,7 @@ def search_params(classifier, params):
                               param_grid=params,
                               cv = 10,
                               n_jobs=-1)
-    
+
     grid_search = grid_search.fit(X_train, y_train)
     print(grid_search.best_score_, grid_search.best_params_)
     return grid_search.best_score_
@@ -409,10 +400,10 @@ from sklearn.model_selection import cross_val_score
 def fit_tree(X, Y):
     tree_classifier = DecisionTreeClassifier(max_features=70, min_samples_leaf=10, max_depth=40)
     tree_classifier.fit(X, Y)
-    
+
     inner_score = tree_classifier.score(X, Y)
     tree_fit = cross_val_score(tree_classifier, X, Y)
-    
+
     return inner_score, tree_fit.mean(), tree_fit.std()
 
 "inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(X_train, y_train))
@@ -425,8 +416,7 @@ no método de montagem random forest. Este modelo de predição possui um proble
 de viés quando uma das classes na base de treino é mais predominante do que
 outra, ou seja, a distribuição das classes na base de treino devem ser
 semelhantes para evitar problemas de
-[overfiting](http://docs.aws.amazon.com/machine-learning/latest/dg/model-fit-
-underfitting-vs-overfitting.html).
+[overfiting](http://docs.aws.amazon.com/machine-learning/latest/dg/model-fit-underfitting-vs-overfitting.html).
 
 Para tanto, precisa-se descobrir qual a
 contagem de cada classe disponível na base de treino, montaremos um histograma
@@ -487,8 +477,7 @@ votação por maioria, ou seja, a categoria
 com mais votos ganha e o resultado é
 dado.
 
-![Workflow Random
-forest](forest.jpg)
+![Workflow Randomforest](forest.jpg)
 
 De acordo com breiman, 2001, as RFs corrigem a maior parte
 dos problemas de
@@ -501,8 +490,7 @@ Referências:
 [BREIMAN](https://www.stat.berkeley.edu/users/breiman/randomforest2001.pdf),
 Leo. Random forests. Machine learning, v. 45, n. 1, p. 5-32, 2001.
 
-##
-Utilizando o algoritmo
+## Utilizando o algoritmo
 
 ```python
 from sklearn.ensemble import RandomForestClassifier
@@ -527,18 +515,14 @@ maior é a importância da feature.
 O método utilizado para gerar a
 importância das features no modelo é a Decrease Mean Importance, que utiliza em
 seus cálculos um indicador de impureza no sistema. No caso do random forest
-implementado [(LOUPPE et al.,
-2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf),
+implementado [(LOUPPE et al.,2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf),
 este indicador é o Gini Impurity que pode ser entendido como uma redução da
 probabilidade de errar a classificação de uma categoria dentro de um algorítmo
-de árvore [(Sebastian Raschaka)](https://sebastianraschka.com/faq/docs/decision-
-tree-binary.html).
+de árvore [(Sebastian Raschaka)](https://sebastianraschka.com/faq/docs/decision-tree-binary.html).
 
 #### O indice
 O indice de Gini pode ser calculado utilizando
-a seguinte fórmula[(TEKIMONO,
-2009)](http://people.revoledu.com/kardi/tutorial/DecisionTree/how-to-measure-
-impurity.htm):
+a seguinte fórmula[(TEKIMONO,2009)](http://people.revoledu.com/kardi/tutorial/DecisionTree/how-to-measure-impurity.htm):
 
 \begin{equation}
     Gini = 1- \sum_{i=1} p_i^2
@@ -559,21 +543,23 @@ Regression Trees (CART), utiliza-se o indice de Gini modificado, isto é,
 calcula-se ainda as probabilidades em $p_i$, mas agora utiliza-se do indice de
 Gini nos filhos da esquerda $t_l$ e direita $t_r$. Recalcula-se as
 probabilidades para ambos os nós também em $p_l$ e $p_r$ utilizando como base as
-possíveis classes reduzidas a $N_t$ [(LOUPPE et al.,
-2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf).
+possíveis classes reduzidas a $N_t$ [(LOUPPE et al.,2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf).
 \begin{equation}
     i(s, t) = Gini(t) - p_l Gini(t_l) - p_r Gini(t_r) \\
-p(t) = \frac{N_{l|r}}{N_t}
+p(t) =
+\frac{N_{l|r}}{N_t}
 \end{equation}
 
 #### Decrease Mean Importance
 
 Para
-calcular a importância de uma feature X ao tentar predizer uma label Y, utiliza-
-se os indices de impureza com a proporção de $N_f$ amostras em relação ao total
-$N$. $N_T$ é o total de árvores na floresta. Assim, para uma Random Forest a
+calcular
+a importância de uma feature X ao tentar predizer uma label Y, utiliza-
+se os
+indices de impureza com a proporção de $N_f$ amostras em relação ao total
+$N$.
+$N_T$ é o total de árvores na floresta. Assim, para uma Random Forest a
 conta é:
-
 \begin{equation}
     I(X_m) = \frac{1}{N_T} \sum_{T} \sum_{t \epsilon
 T:v(s)=X_m} pf(t)i(s,t) \\
@@ -615,11 +601,9 @@ print ("{} de precisão".format(rfscores.mean() * 100))
 
 ## ExtraTrees
 
-O [Scikit Learn](http://scikit-
-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html)
+O [Scikit Learn](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html)
 nos apresenta um tipo diferente de random forest que pode apresentar resultados
-melhores que o [RandomForestClassifier](http://scikit-
-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
+melhores que o [RandomForestClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
 
 ```python
 from sklearn.ensemble import ExtraTreesClassifier
@@ -651,7 +635,5 @@ Estimativa: 10 min com I7 3.1  8Ram
 ```
 
 # Referências Bibliográficas
-http://scikit-
-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier
-https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-
-xgboost-with-codes-python/
+http://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier
+https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgboost-with-codes-python/
