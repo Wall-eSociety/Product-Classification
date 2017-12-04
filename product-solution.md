@@ -57,6 +57,31 @@ df_train.head() # The train dataset
 df_test.head() # It hasn't target
 ```
 
+# Benchmark
+
+A variável results é um acumulador para salvar os resultados na
+base de treino e teste de cada um dos modelos e compará-los ao final.
+
+Segue a
+estrutura:
+
+`
+ 'modelo':
+     'teste': value
+     'treino': value
+`
+
+```python
+from sklearn.model_selection import train_test_split
+
+results = {}
+def add_results(model, train, test):
+    results[model] = {
+        'train': train*100,
+        'test': test*100,
+    }
+```
+
 # Cross Validation
 
 A abordagem para a Validação Cruzada é a utilização do
@@ -199,14 +224,12 @@ efetivamente treinar o modelo e 20% para
 averiguar a performance do modelo.
 
 ```python
-from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler
 
 X = df_train
 y = df_target.categories
-
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 ```
 
@@ -326,9 +349,10 @@ def dummies(X_train, y_train, X_test, y_test):
         cm = confusion_matrix(y_test, y_pred)
 
         plot_confusion_matrix(cm, classes=model)
-
         # Cross validation
         accuracies = cross_val_score(estimator=clf, X=X_train, y=y_train, cv=10)
+        
+        add_results(model, clf.score(X_train, y_train), clf.score(X_test, y_test))
         print(model, 'train dataset score: %.2f' % score)
         print('Média: %.2f' % accuracies.mean())
         print('Desvio padrão: %.4f' % accuracies.std())
@@ -436,10 +460,15 @@ def xgboost(X_train, y_train, X_test, y_test):
 
     print('XGBoost cross validation')
     accuracies = cross_val_score(estimator=xgbclf, X=X_train, y=y_train, cv=10)
+    
+    print('XGBoost results')
+    add_results('xgboost', xgbclf.score(X_train, y_train), xgbclf.score(X_test, y_test))
+    
     plot_confusion_matrix(cm, classes=xgbclf)
     print('Resultado na base de treino %.2f' % train_score)
     print('Resultado Médio na base de teste: %.2f' % accuracies.mean())
     print('Desvio padrão: %.4f' % accuracies.std())
+    
 
 xgboost(X_train, y_train, X_test, y_test)
 ```
@@ -602,16 +631,18 @@ como as Random Forests.
 ```python
 from sklearn.model_selection import cross_val_score
 
-def fit_tree(X, Y):
-    tree_classifier = DecisionTreeClassifier(max_features=70, min_samples_leaf=10, max_depth=40)
-    tree_classifier.fit(X, Y)
+def fit_tree(X_train, y_train, X_test, y_test, tree_description='decision_tree'):
+    tree_clf = DecisionTreeClassifier(max_features=70, min_samples_leaf=10, max_depth=40)
+    tree_clf.fit(X_train, y_train)
 
-    inner_score = tree_classifier.score(X, Y)
-    tree_fit = cross_val_score(tree_classifier, X, Y)
-
+    inner_score = tree_clf.score(X_train, y_train)
+    tree_fit = cross_val_score(tree_clf, X_train, y_train)
+    
+    add_results(tree_description, tree_clf.score(X_train, y_train), tree_clf.score(X_test, y_test))
+    
     return inner_score, tree_fit.mean(), tree_fit.std()
 
-"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(X_train, y_train))
+"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(X_train, y_train, X_test, y_test))
 ```
 
 ## Distribuição dos dados
@@ -663,7 +694,8 @@ rodou-se novamene o algorítmo da decision tree e percebeu-se que a acurácia do
 modelo diminuiu, e portanto, não será utilizado.
 
 ```python
-"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(df_rtrain, df_rtarget.target))
+X_tr, X_te, y_tr, y_te = train_test_split(df_rtrain, df_rtarget.target, test_size=0.2)
+"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(X_tr, y_tr, X_te, y_te))
 ```
 
 # Random Forest
@@ -690,18 +722,39 @@ Overfitting que as Árvores de decisão apresentam. Tudo depende
 do quanto as DT
 contidas dentro da Random Forest. Isto é, o quanto elas
 representam os dados.
-## Utilizando o algoritmo
+##
+Utilizando o algoritmo
 
 ```python
+### %%time
+
 from sklearn.ensemble import RandomForestClassifier
-rfclf = RandomForestClassifier(n_estimators=10, max_features=70, min_samples_leaf=10, max_depth=40)
-rfclf = rfclf.fit(X_train, y_train)
 
-train_score = rfclf.score(X_train, y_train)
-test_score = cross_val_score(rfclf, X_train, y_train)
+def test_random(params, X_train, y_train, X_test, y_test, name='random_forest'):
+    rfclf = RandomForestClassifier(**params)
+    rfclf = rfclf.fit(X_train, y_train)
+    
+    train_score = rfclf.score(X_train, y_train)
+    test_score = rfclf.score(X_test, y_test)
 
-train_score
-test_score
+    add_results(name, train_score, test_score)
+    return name, train_score, test_score
+params = {'n_estimators': 10, 'max_features': 70, 'min_samples_leaf': 10, 'max_depth': 40}
+test_random({}, X_train, y_train, X_test, y_test)
+test_random(params, X_train, y_train, X_test, y_test, 'random_forest_otimized')
+```
+
+## Verificando com Cross Validation
+
+Cross validation irá predizer um pedaço do
+dataset utilizando o modelo treinado
+com o resto dos dados que não fazem parte
+deste dataset.
+
+```python
+rfscores = cross_val_score(rfclf, X_train, y_train)
+print ("{} de precisão".format(rfscores.mean() * 100))
+
 ```
 
 ## Importancia das features para a RF
@@ -782,30 +835,6 @@ plot = axis.set_ylabel('importance')
 plt.show()
 ```
 
-## Verificando a acurácia com os dados de treinamento
-
-Utilizando os dados que
-foram utilizados parar treinar o algoritmo como entrada
-para predição nos dá
-noção se o modelo pode estar viciado.
-
-```python
-print ("{} de precisão".format(rfclf.score(X_train, y_train) * 100))
-```
-
-## Verificando com Cross Validation
-
-Cross validation irá predizer um pedaço do
-dataset utilizando o modelo treinado
-com o resto dos dados que não fazem parte
-deste dataset.
-
-```python
-rfscores = cross_val_score(rfclf, X_train, y_train)
-print ("{} de precisão".format(rfscores.mean() * 100))
-
-```
-
 ## ExtraTrees
 
 O [Scikit Learn](http://scikit-
@@ -826,31 +855,13 @@ utiliza toda a base de treino para crescer a árvore [(GEURTS, ERNST e WEHENKEL,
 ```python
 from sklearn.ensemble import ExtraTreesClassifier
 
-etc = ExtraTreesClassifier();
-etscores = cross_val_score(rfclf, X_train, y_train)
-extra_tree_fit = etc.fit(X_train, y_train)
-
+etc = ExtraTreesClassifier()
+etscores = cross_val_score(etc, X_train, y_train)
 print ("{} de precisão".format((etscores.mean() * 100)))
-print(extra_tree_fit.score(X_train, y_train))
-```
 
-## Boosting Trees
-
-Este algorítmo demora demais para rodar, descomente se tiver
-a paciencia de
-esperar.
-Estimativa: 10 min com I7 3.1  8Ram
-
-```python
-#from sklearn.ensemble import GradientBoostingClassifier
-
-#gbc = GradientBoostingClassifier();
-#gbcscores = cross_val_score(gbc, df_train, y)
-```
-
-```python
-#print (gbcscores.mean() * 100, end='')
-#print ("%")
+etc = etc.fit(X_train, y_train)
+add_results('extra_trees', etc.score(X_train, y_train), etc.score(X_test, y_test))
+print("Inner score", etc.score(X_train, y_train))
 ```
 
 ### MLP Classifier
@@ -859,6 +870,8 @@ usado para fazer o
 treinamento de modelos, e é uma biblioteca do Scikit-Learn.
 
 ```python
+%%time
+
 from sklearn.neural_network import MLPClassifier
 
 mlp = MLPClassifier()
@@ -870,8 +883,36 @@ print(trac)
 print('Saida redes neurais: ', saidas)
 print('Saida desejada', y_test)
 print(trac)
-print('Score: ', mlp.score(X_test, y_test))
+mlpscores = cross_val_score(mlp, X_train, y_train)
 
+print('Score: {} +/- {}'.format(mlpscores.mean(), mlpscores.std()))
+
+add_results('multi_layer_perceptron', mlp.score(X_train, y_train), mlp.score(X_test, y_test))
+
+```
+
+# Conclusão
+
+Como conclusão, tivemos a utilização do modelo Random Forest e
+Extreme Gradient Boosting otimizados. Mas o gráfico a seguir irá mostrar os
+resultados com a base de treino e base de teste.
+
+```python
+columns = [x.replace('_',' ') for x in results.keys()]
+train = []
+test = []
+width=0.4
+base = np.arange(len(columns))
+for key in results:
+    train.append(results[key]['train'])
+    test.append(results[key]['test'])
+fig, ax=plt.subplots(figsize=[10,10])
+fig = ax.bar(base, train, width)
+fig = ax.bar(base+width, test, width)
+fig = ax.set_xticks(base+width/2)
+fig = ax.set_xticklabels(columns, rotation='45')
+fig = ax.legend(['Base de treino', 'Base de teste'])
+plt.show()
 ```
 
 # Referências Bibliográficas
