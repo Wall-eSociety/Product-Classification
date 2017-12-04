@@ -613,18 +613,6 @@ condições para realização de um
 jogo de
 tênis.
 
-buscar uma árvore de decisão
-aceitável, onde o algoritmo nunca retrocede em
-reavaliar escolhas anteriores.
-Levando em consideração todas essas informações sobre Árvores de decisões
-podemos dizer que no contexto de predição da classificação de risto, as DTs são
-as mais adequadas. O que as tornam mais apropriadas ainda é a possibilidade de
-visualizar a árvore de decisão montada, o que reflete nas decisões que ela toma.
-Porém as Dts existem
-a muito tempo e ao longo do tempo foram criados
-melhoramentos para as árvores
-como as Random Forests.
-
 ```python
 from sklearn.model_selection import cross_val_score
 
