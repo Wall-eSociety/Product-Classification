@@ -157,6 +157,17 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
 ### Feature Scaling
 
+Trata-se do processo de transformar todos os dados da
+amostra para uma unidade padrão, neste problema utilizaremos a técnica de
+padronização que consiste em remover a média dos dados e colocar todos na escala
+do desvio padrão [Wikipedia](https://en.wikipedia.org/wiki/Feature_scaling). Em
+que $\bar{x}$ é a média e $\sigma$ é o desvio padrão.
+
+\begin{equation}
+    x' =
+\frac{x - \bar{x}}{\sigma}
+\end{equation}
+
 ```python
 sc_X = StandardScaler()
 sc_X_train = sc_X.fit_transform(X_train)
@@ -168,6 +179,23 @@ modelos, mas o resultado não apresentou mudança. Os modelos continuaram com
 exatamente as mesmas performances.
 
 ### Confusion Matrix
+
+A matriz de confução é
+uma métrica para algorítmos supervisionados em que é possível estabelecer uma
+relação entre os acertos e erros durante a classificação do conjunto de
+amostras. Basicamente elabora-se uma matriz em que nas colunas e linhas são as
+possíveis classes. Cada célula traz a contagem de amostras que eram da Label X
+(coluna) e foram classificadas na Label Y (linha). Dessa forma, na matriz, a
+diagonal principal trará os acertos do classificador
+[Microsoft](https://docs.microsoft.com/pt-br/sql/analysis-services/data-
+mining/classification-matrix-analysis-services-data-mining). Veja o exemplo a
+seguir:
+
+|Classificador\Real|Label 1|Label 2|Label 3|
+|---|-------|-------|-------|
+|**Label 1**|10|10|0|
+|**Label 2**|1|10|1|
+|**Label 3**|0|0|3|
 
 Plot para matriz de confusão encontrado em
 [Scikit](http://scikit-
@@ -223,6 +251,11 @@ regras simples.
 O dummy é importante para termos como parâmetro de
 comparação
 com outros modelos.
+
+* **Stratified**: realiza predições baseadas na
+distribuição das classes da base de treino. (Ex.: 10% A, 20% B, 50% C, 20% D) 
+*
+**Most Frequent**: sempre prediz com a classe mais frequente na base de treino
 
 ```python
 from sklearn.dummy import DummyClassifier
