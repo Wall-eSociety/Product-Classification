@@ -31,7 +31,7 @@ São um total de 93
 características na qual não há a descrição do que significa cada uma delas.
 Sendo que não há dados faltando. O range dos dados vão de 0 a 352.
 
-```python
+```{.python .input}
 # Configure to show multiples outputs from a single cell
 from IPython.core.interactiveshell import InteractiveShell
 InteractiveShell.ast_node_interactivity = "all"
@@ -46,7 +46,7 @@ from sklearn.neural_network import MLPClassifier
 
 ```
 
-```python
+```{.python .input}
 with zipfile.ZipFile('Datasets.zip') as ziped_file:
     with ziped_file.open('Datasets/train.csv') as train_file:
         df_train = pd.read_csv(train_file, header=0).set_index('id')
@@ -74,7 +74,7 @@ estrutura:
      'treino': value
 `
 
-```python
+```{.python .input}
 from sklearn.model_selection import train_test_split
 
 results = {}
@@ -90,7 +90,8 @@ def add_results(model, train, test):
 A abordagem para a Validação Cruzada é a utilização do
 método de k-partições. Neste método, o conjunto de dados é dividido em k
 partições [(WITTEN e FRANK,
-2000)](ftp://ftp.ingv.it/pub/manuela.sbarra/Data%20Mining%20Practical%20Machine%20Learning%20Tools%20and%20Techniques%20-%20WEKA.pdf),
+2000)](ftp://ftp.ingv.it/pub/manuela.sbarra/Data%20Mining%20Practical%20Machine%
+20Learning%20Tools%20and%20Techniques%20-%20WEKA.pdf),
 testes extensivos em diversas bases de dados, utilizando diversos algoritmos,
 identificaram o valor de k para identificar a melhor margem de erro como sendo
 10, também de forma randômica. Então, o conjunto de dados de treinamento é
@@ -134,13 +135,15 @@ entre elas, entretanto, como são um total de 93 features, dificulta visualizar 
 correlação em forma gráfica.
 
 A correlação de
-[Pearson](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de%0A_Pearson)
+[Pearson](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de%0
+A_Pearson)
 mede o grau da correlação (e a direcção dessa correlação - se
 positiva ou
 negativa) entre duas variáveis de escala métrica (intervalar ou de
 rácio/razão).
 Já a correlação de
-[Spearman](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de_postos_de_Spearman)
+[Spearman](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de_
+postos_de_Spearman)
 entre duas variáveis é igual à correlação de Pearson entre
 os valores de postos
 daquelas duas variáveis. Enquanto a correlação de Pearson
@@ -157,7 +160,7 @@ variáveis, pois esta relação nos possibilita remover uma delas sem
 prejuizos aos
 modelos de machine learn
 
-```python
+```{.python .input}
 shape = (df_train.shape[1], df_train.shape[1])
 upper_matrix = np.tril(np.ones(shape)).astype(np.bool)
 np.fill_diagonal(upper_matrix, False)
@@ -185,7 +188,7 @@ absoluto|Significado|
 |0.0 < v <= 0.3 |
 Desprezível |
 
-```python
+```{.python .input}
 strong_correlation = correlation.where(correlation > 0.8)
 strong_correlation = strong_correlation.dropna(how='all', axis=(0,1))
 corr_features = strong_correlation[strong_correlation.notnull()].stack().index
@@ -227,7 +230,7 @@ Utilizaremos 80% da base de treino para
 efetivamente treinar o modelo e 20% para
 averiguar a performance do modelo.
 
-```python
+```{.python .input}
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler
@@ -250,7 +253,7 @@ que $\bar{x}$ é a média e $\sigma$ é o desvio padrão.
 \frac{x - \bar{x}}{\sigma}
 \end{equation}
 
-```python
+```{.python .input}
 sc_X = StandardScaler()
 sc_X_train = sc_X.fit_transform(X_train)
 sc_X_test = sc_X.transform(X_test)
@@ -285,7 +288,7 @@ learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html#sphx-
 glr-auto-examples-model-selection-plot-confusion-matrix-py) e adaptado para o
 problema
 
-```python
+```{.python .input}
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
@@ -344,8 +347,7 @@ de treino. (Ex.: 10% A, 20% B, 50% C, 20% D)
 * **Most Frequent**: sempre prediz
 com a classe mais frequente na base de treino
 
-
-```python
+```{.python .input}
 from sklearn.dummy import DummyClassifier
 
 def dummies(X_train, y_train, X_test, y_test):
@@ -382,16 +384,18 @@ fraco de aprendizagem pode ser definido como modelos ou regras que não possuem
 boa acurácia ou aparentam ser ineficientes, tais como modelos *dummy*: mais
 frequente, estratificado, randômico. Já algorítmos de aprendizagem forte, são
 aqueles que apresentam uma boa taxa de acertos [(FREUND e
-SCHAPIRE)](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=4BF3325D8222B3234BB95971FCAD8759?doi=10.1.1.56.9855&rep=rep1&type=pdf).
+SCHAPIRE)](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=4BF3325D8222
+B3234BB95971FCAD8759?doi=10.1.1.56.9855&rep=rep1&type=pdf).
 **Exemplo - Corrida de cavalos**[(FREUND e
-SCHAPIRE)](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=4BF3325D8222B3234BB95971FCAD8759?doi=10.1.1.56.9855&rep=rep1&type=pdf):
+SCHAPIRE)](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=4BF3325D8222
+B3234BB95971FCAD8759?doi=10.1.1.56.9855&rep=rep1&type=pdf):
 Como determinar em qual cavalor apostar, considerando um conjunto de dados
 disponíveis tais como informações do cavalo, do dono, das corridas anteriores e
 etc. Ao perguntar para especialistas cada um deles irá falar coisas distintas e
 ainda assim muito imprecisas (modelos fracos)! Mas seria possível utilizar as
 regras de aposta de cada especialista e gerar uma única regra que seja capaz de
-predizer o cavalor vencedor da corrida utilizando boost 
-    
+predizer o cavalor vencedor da corrida utilizando boost
+
 ## Gradient
 Descent
 
@@ -443,13 +447,13 @@ disposição.
 \end{equation}
 
 **L- Training Loss function**: Mede predição do
-modelo na base de treino. (Métrica: *Mean Squared Error*(MSE))   
+modelo na base de treino. (Métrica: *Mean Squared Error*(MSE))
 **Omega-
 Regularization function **: Controla a complexidade do modelo (Ajuda a evitar o
 *Overfitting*)
 
 nota: As *objective functions* devem sempre possuir *training
-loss* e *regularization* 
+loss* e *regularization*
 
 ![](https://raw.githubusercontent.com/dmlc/web-
 data/master/xgboost/model/step_fit.png)
@@ -485,7 +489,7 @@ f_1(x_i) + f_2(x_i)= \hat{y}_i^{(1)} + f_2(x_i)\\
 \sum_{k=1}^t f_k(x_i)= \hat{y}_i^{(t-1)} + f_t(x_i)
 \end{split}
 
-```python
+```{.python .input}
 x = inital_value
 step = 0.01
 
@@ -497,7 +501,7 @@ xprev=x
 precisao
 ```
 
-```python
+```{.python .input}
 %%time
 from xgboost import XGBClassifier
 
@@ -543,7 +547,7 @@ A ferramenta GridSearch disponibilizada pelo Scikit, gera de
 forma exaustiva candidatos a partir de um grid de  parâmetros especificados com
 o atributo param_grid.
 
-```python
+```{.python .input}
 dt_params = [{
     'max_depth': [40, 50, 60, 80, 100, 120],
     'max_features': [70, 80, 90, 92],
@@ -554,9 +558,16 @@ xgb_params = [{
     'max_depth': [4, 5, 6],
     'min_child_weight': [4, 5, 6]
 }]
+
+mlp_params = [{
+    'activation': ['identity', 'logistic', 'tanh', 'relu'],
+    'solver': ['lbfgs', 'sgd', 'adam'],
+    'learning_rate': ['constant', 'invscaling', 'adaptive'],
+    'hidden_layer_sizes': [10, 20, 30, 40, 50, 60, 70]
+}]
 ```
 
-```python
+```{.python .input}
 %%time
 from sklearn.model_selection import GridSearchCV
 from sklearn.tree import DecisionTreeClassifier
@@ -575,7 +586,7 @@ def search_params(classifier, params):
 
 ### Aplicando GridSearchCV ao XGBClassifier:
 
-```python
+```{.python .input}
 %%time
 from xgboost import XGBClassifier
 
@@ -585,7 +596,7 @@ search_params(XGBClassifier, xgb_params)
 
 Aplicando GridSearchCV ao Decision Tree Classifier:
 
-```python
+```{.python .input}
 search_params(DecisionTreeClassifier, dt_params)
 ```
 
@@ -667,7 +678,7 @@ condições para realização de um
 jogo de
 tênis.
 
-```python
+```{.python .input}
 from sklearn.model_selection import cross_val_score
 
 def fit_tree(X_train, y_train, X_test, y_test, tree_description='decision_tree'):
@@ -698,7 +709,7 @@ Para tanto, precisa-se descobrir qual a
 contagem de cada classe disponível na base de treino, montaremos um histograma
 para verificar a diferença entre elas.
 
-```python
+```{.python .input}
 counts = [0] *len(df_target.target.cat.categories)
 
 def reduce(target):
@@ -717,7 +728,7 @@ registros. O critério de filtrar os dados será pegar a classe que possue o men
 número e utilizar ele como base para remover os demais, considerando um tamanho
 máximo de até 2x o da menor classe
 
-```python
+```{.python .input}
 distance_percent = 2
 minimum_value = df_target.groupby('target')['increase_count'].max().min()
 df_rtarget = df_target[ df_target.increase_count < minimum_value*distance_percent ]
@@ -732,7 +743,7 @@ Após aplicar uma melhor distribuição nos dados,
 rodou-se novamene o algorítmo da decision tree e percebeu-se que a acurácia do
 modelo diminuiu, e portanto, não será utilizado.
 
-```python
+```{.python .input}
 X_tr, X_te, y_tr, y_te = train_test_split(df_rtrain, df_rtarget.target, test_size=0.2)
 "inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(X_tr, y_tr, X_te, y_te))
 ```
@@ -764,7 +775,7 @@ representam os dados.
 ##
 Utilizando o algoritmo
 
-```python
+```{.python .input}
 ### %%time
 
 from sklearn.ensemble import RandomForestClassifier
@@ -790,7 +801,7 @@ dataset utilizando o modelo treinado
 com o resto dos dados que não fazem parte
 deste dataset.
 
-```python
+```{.python .input}
 rfscores = cross_val_score(rfclf, X_train, y_train)
 print ("{} de precisão".format(rfscores.mean() * 100))
 
@@ -808,7 +819,8 @@ O método utilizado para gerar a
 importância das features no modelo é a Decrease Mean Importance, que utiliza em
 seus cálculos um indicador de impureza no sistema. No caso do random forest
 implementado [(LOUPPE et
-al.,2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf),
+al.,2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50f
+df56d.pdf),
 este indicador é o Gini Impurity que pode ser entendido como uma redução da
 probabilidade de errar a classificação de uma categoria dentro de um algorítmo
 de árvore [(Sebastian Raschaka)](https://sebastianraschka.com/faq/docs/decision-
@@ -817,7 +829,8 @@ tree-binary.html).
 #### O indice
 O indice de Gini pode ser calculado utilizando
 a seguinte
-fórmula[(TEKIMONO,2009)](http://people.revoledu.com/kardi/tutorial/DecisionTree/how-
+fórmula[(TEKIMONO,2009)](http://people.revoledu.com/kardi/tutorial/DecisionTree/
+how-
 to-measure-impurity.htm):
 
 \begin{equation}
@@ -842,7 +855,8 @@ calcula-se ainda as probabilidades em $p_i$, mas agora utiliza-se do indice de
 Gini nos filhos da esquerda $t_l$ e direita $t_r$. Recalcula-se as
 probabilidades para ambos os nós também em $p_l$ e $p_r$ utilizando como base as
 possíveis classes reduzidas a $N_t$ [(LOUPPE et
-al.,2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50fdf56d.pdf).
+al.,2013)](https://pdfs.semanticscholar.org/2635/19c5a43fbf981da5ba873062219c50f
+df56d.pdf).
 \begin{equation}
     i(s, t) = Gini(t) - p_l Gini(t_l) - p_r Gini(t_r) \\
 p(t) =
@@ -865,7 +879,7 @@ T:v(s)=X_m} pf(t)i(s,t) \\
     pf(f) = \frac{N_f}{N}
 \end{equation}
 
-```python
+```{.python .input}
 fig, axis = plt.subplots(figsize=(15, 5))
 plot = axis.bar(df_train.columns, rfclf.feature_importances_)
 plot = axis.set_xticklabels(df_train.columns.values, rotation='vertical')
@@ -880,7 +894,8 @@ O [Scikit Learn](http://scikit-
 learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html)
 nos apresenta um tipo diferente de random forest que pode apresentar resultados
 melhores que o [RandomForestClassifier](http://scikit-
-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html).
+learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
+.
 Assim como afirma que as extra tree devem ser utilizadas apenas em algorítmos de
 montagem Como o Extra Trees Classifier e Regressor.
 
@@ -889,8 +904,10 @@ tree de uma decision tree é a forma que é feita a construção da árvore. Enq
 uma decision tree utiliza cópia dos dados e sub amostras para realizar as
 divisões de cada nó. Uma extra tree utiliza um ponto de divisão randomico e
 utiliza toda a base de treino para crescer a árvore [(GEURTS, ERNST e WEHENKEL,
-2005)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.65.7485&rep=rep1&type=pdf).
-```python
+2005)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.65.7485&rep=rep1
+&type=pdf).
+
+```{.python .input}
 from sklearn.ensemble import ExtraTreesClassifier
 
 etc = ExtraTreesClassifier()
@@ -931,12 +948,48 @@ modificalo.
 ![Workflow
 Potencialdeativacao](formula.png)
 
+## Neural Networks
+As Redes Neurais é uma estrutura de aprendizado de máquinas que tenta imitar o
+padrão de aprendizado de redes neurais biológicas naturais. As redes neurais
+biológicas têm neurônios interligados com dendritos que recebem entradas, então,
+com base nessas entradas, eles produzem um sinal de saída através de um axônio
+para outro neurônio. Vamos tentar imitar esse processo através do uso de Redes
+Neurais Artificiais (ANN)
+
+### O Perceptron
+Um perceptron possui uma ou mais entradas, uma polarização, uma função de
+ativação e uma única saída. O perceptron recebe entradas, as multiplica por
+algum peso e as passa para uma função de ativação para produzir uma saída.
+Existem muitas funções de ativação possíveis para escolher, como a função
+lógica, uma função trigonométrica, uma função de etapa etc. Também nos
+certificamos de adicionar um preconceito ao perceptron, isso evita problemas em
+que todas as entradas podem ser iguais a zero (o que significa nenhum peso
+multiplicativo teria efeito). Veja o diagrama abaixo para uma visualização de um
+perceptron:
+
+![Workflow NeuralNetwork](perceptron.jpg)
+
+Uma vez que temos a saída, podemos compará-la com um rótulo conhecido e ajustar
+os pesos de acordo (os pesos geralmente começam com valores de inicialização
+aleatórios). Continuamos repetindo esse processo até atingir um número máximo de
+iterações permitidas ou uma taxa de erro aceitável.
+
+Para criar uma rede neural, simplesmente começamos a adicionar camadas de
+perceptrons em conjunto, criando um modelo perceptron multicamada de uma rede
+neural. Você terá uma camada de entrada que aceita diretamente suas entradas de
+recursos e uma camada de saída que criará as saídas resultantes. Quaisquer
+camadas intermediárias são conhecidas como camadas ocultas porque elas não
+"vêem" diretamente as entradas ou saídas do recurso. Para uma visualização desta
+verificação, veja o diagrama abaixo (fonte: Wikipedia).
+
+![Workflow NeuralNetwork](ann-in-hidden-out.jpg)
+
 ### MLP Classifier
 Esse algoritmo é um classificador Perceptron de Multicamadas
 usado para fazer o
 treinamento de modelos, e é uma biblioteca do Scikit-Learn.
 
-```python
+```{.python .input}
 %%time
 
 from sklearn.neural_network import MLPClassifier
@@ -956,15 +1009,76 @@ print('Score: {} +/- {}'.format(mlpscores.mean(), mlpscores.std()))
 
 add_results('multi_layer_perceptron', scoreTreino, scoreTeste)
 ```
-```python
+
+```{.python .input}
 from sklearn.neural_network import MLPClassifier
 
 mp = confusion_matrix(y_test,saidas);
 plot_confusion_matrix(mp, classes=model)
 ```
 
-```python
+```{.python .input}
 print(div,classification_report(y_test,saidas))
+```
+
+## Preprocessamento de dados
+
+A rede neural pode ter dificuldade em convergir antes de atingir o número máximo
+de iterações permitido se os dados não forem normalizados. Multi-layer
+Perceptron é sensível ao dimensionamento de features, portanto, é altamente
+recomendável dimensionar seus dados. Usaremos o StandardScaler incorporado para
+padronização.
+
+```{.python .input}
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+# Fit only to the training data
+scaler.fit(X_train)
+```
+
+```{.python .input}
+# Now apply the transformations to the data:
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)
+```
+
+```{.python .input}
+mlp = MLPClassifier(hidden_layer_sizes=(30,30,30))
+```
+
+```{.python .input}
+mlp.fit(X_train,y_train)
+```
+
+```{.python .input}
+predictions = mlp.predict(X_test)
+```
+
+```{.python .input}
+from sklearn.metrics import classification_report,confusion_matrix
+print(confusion_matrix(y_test,predictions))
+```
+
+```{.python .input}
+print(classification_report(y_test,predictions))
+```
+
+coefs_ é uma lista de matrizes de peso, onde a matriz de peso no índice i
+representa os pesos entre a camada i e a camada i + 1.
+
+intercepts_ é uma lista de vetores de polarização, onde o vetor no índice i
+representa os valores de polarização adicionados à camada i + 1.
+
+```{.python .input}
+len(mlp.coefs_)
+```
+
+```{.python .input}
+len(mlp.coefs_[0])
+```
+
+```{.python .input}
+len(mlp.intercepts_[0])
 ```
 
 # Conclusão
@@ -973,7 +1087,7 @@ Como conclusão, tivemos a utilização do modelo Random Forest e
 Extreme Gradient Boosting otimizados. Mas o gráfico a seguir irá mostrar os
 resultados com a base de treino e base de teste.
 
-```python
+```{.python .input}
 columns = [x.replace('_',' ') for x in results.keys()]
 train = []
 test = []
@@ -993,7 +1107,8 @@ plt.show()
 
 # Referências Bibliográficas
 http://scikit-
-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier
+learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.du
+mmy.DummyClassifier
 https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-
 xgboost-with-codes-python/
 
