@@ -344,7 +344,6 @@ de treino. (Ex.: 10% A, 20% B, 50% C, 20% D)
 * **Most Frequent**: sempre prediz
 com a classe mais frequente na base de treino
 
-
 ```python
 from sklearn.dummy import DummyClassifier
 
@@ -416,23 +415,30 @@ gradient é:
 # XGBoost
 
 XGBoost é um algoritmo que implementa
-*gradient boosting* de
+*gradient
+boosting* de
 Decision Trees de
 forma rápida e com alta performance.
-**Gradient Boosting** é
+**Gradient
+Boosting** é
 uma técnica de *machine learning* para problemas de
-regressão e classificação
+regressão e
+classificação
 que produz um modelo de predição na forma de
-*ensemble* de modelos de predições
+*ensemble* de modelos
+de predições
 fracas, normalmente árvores de decisões.
-Boosting é um processo sequencial, mas
+Boosting é um processo
+sequencial, mas
 como o `XGBoost` consegue implementá-lo
 de forma paralela?
 Sabemos que cada
 árvore pode ser produzida apenas depois que
-produzida a árvore anterior, mas o
+produzida a árvore
+anterior, mas o
 processo de criar as árvores pode ser
-paralelizado utilizando todos os núcleos a
+paralelizado utilizando
+todos os núcleos a
 disposição.
 
 ## Model
@@ -441,16 +447,17 @@ disposição.
 \text{obj}(\theta) = L(\theta)
 + \Omega(\theta)
 \end{equation}
-
 **L- Training Loss function**: Mede predição do
-modelo na base de treino. (Métrica: *Mean Squared Error*(MSE))   
+modelo na base de treino.
+(Métrica: *Mean Squared Error*(MSE))   
 **Omega-
-Regularization function **: Controla a complexidade do modelo (Ajuda a evitar o
+Regularization function **:
+Controla a complexidade do modelo (Ajuda a evitar o
 *Overfitting*)
 
-nota: As *objective functions* devem sempre possuir *training
-loss* e *regularization* 
-
+nota: As
+*objective functions* devem sempre possuir *training
+loss* e *regularization*
 ![](https://raw.githubusercontent.com/dmlc/web-
 data/master/xgboost/model/step_fit.png)
 
@@ -890,6 +897,7 @@ uma decision tree utiliza cópia dos dados e sub amostras para realizar as
 divisões de cada nó. Uma extra tree utiliza um ponto de divisão randomico e
 utiliza toda a base de treino para crescer a árvore [(GEURTS, ERNST e WEHENKEL,
 2005)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.65.7485&rep=rep1&type=pdf).
+
 ```python
 from sklearn.ensemble import ExtraTreesClassifier
 
@@ -907,7 +915,8 @@ print("Inner score", etc.score(X_train, y_train))
 ![Workflow NeuralNetwork](neural.jpg)
 
 #### Entrada
-- Sinais de entrada {x1,x2,...,xn}.
+-
+Sinais de entrada {x1,x2,...,xn}.
 - Cada sinal de entrada e ponderado por 1
 peso.{w1,w2,...,wn}.
 - O peso é adquirido a partir do treino.
@@ -915,7 +924,6 @@ peso.{w1,w2,...,wn}.
 #### Função
 agregadora
 - Recebe todos os sinais e realiza a soma dos produtos dos sinais.
-
 #### Neurônio
 - Tem a função de deixar, passar ou inibir um sinal de saida de
 acordo com a entrada.
@@ -932,16 +940,18 @@ modificalo.
 Potencialdeativacao](formula.png)
 
 ### MLP Classifier
-Esse algoritmo é um classificador Perceptron de Multicamadas
+Esse algoritmo é um
+classificador Perceptron de Multicamadas
 usado para fazer o
-treinamento de modelos, e é uma biblioteca do Scikit-Learn.
+treinamento de
+modelos, e é uma biblioteca do Scikit-Learn.
 
 ```python
 %%time
 
 from sklearn.neural_network import MLPClassifier
 
-mlp = MLPClassifier()
+mlp = MLPClassifier(solver='adam',activation='relu',max_iter=250)
 mlp.fit(X_train, y_train)
 saidas = mlp.predict(X_test)
 scoreTreino =  mlp.score(X_train, y_train)
@@ -956,6 +966,7 @@ print('Score: {} +/- {}'.format(mlpscores.mean(), mlpscores.std()))
 
 add_results('multi_layer_perceptron', scoreTreino, scoreTeste)
 ```
+
 ```python
 from sklearn.neural_network import MLPClassifier
 
@@ -964,7 +975,8 @@ plot_confusion_matrix(mp, classes=model)
 ```
 
 ```python
-print(div,classification_report(y_test,saidas))
+target_names = ['class 1','class 2','class 3','class 4','class 5','class 6','class 7','class 8','class 9',]
+print(div,classification_report(y_test,saidas, target_names = target_names, sample_weight = mlp.coefs_))
 ```
 
 # Conclusão
@@ -997,6 +1009,9 @@ learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.du
 https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-
 xgboost-with-codes-python/
 
+http://scikit-
+learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html
+ftp://ftp.sas.com/pub/neural/FAQ3.html#A_hu
 [MITCHELL](https://dl.acm.org/citation.cfm?id=505283), Tom M. Machine learning.
 1997. Burr Ridge, IL: McGraw Hill, v. 45, n. 37, p. 870-877, 1997.
 [QUINLAN](http://hunch.net/~coms-4771/quinlan.pdf), J.. Ross . Induction of
