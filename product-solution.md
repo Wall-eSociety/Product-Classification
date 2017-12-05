@@ -322,15 +322,22 @@ def plot_confusion_matrix(cm, classes,
 
 ## Modelo Dummy Classifier
 
-Dummy Classifier é um modelo que faz predições usando regras simples.
+Dummy Classifier é um modelo que faz predições
+usando regras simples.
 
-O dummy é importante para termos como parâmetro de comparação com outros modelos.Não pode ser utilizado em problemas reais porque ele é apenas para realizar comparações e trabalha com aleatoriedade e frequencia de repetições para realizar as predições.
+O dummy é importante para termos como parâmetro de
+comparação com outros modelos.Não pode ser utilizado em problemas reais porque
+ele é apenas para realizar comparações e trabalha com aleatoriedade e frequencia
+de repetições para realizar as predições.
 
 Usamos dois tipos de estratégia:
 
-* **Stratified**: realiza predições baseadas na
-distribuição das classes da base de treino. (Ex.: 10% A, 20% B, 50% C, 20% D)
-* **Most Frequent**: sempre prediz com a classe mais frequente na base de treino
+*
+**Stratified**: realiza predições baseadas na
+distribuição das classes da base
+de treino. (Ex.: 10% A, 20% B, 50% C, 20% D)
+* **Most Frequent**: sempre prediz
+com a classe mais frequente na base de treino
 
 ```python
 from sklearn.dummy import DummyClassifier
@@ -357,6 +364,47 @@ def dummies(X_train, y_train, X_test, y_test):
 dummies(X_train, y_train, X_test, y_test)
 ```
 
+## Boosting
+
+A definição de boosting é que até mesmo algorítmos
+fracos de
+machine larning podem se tornar potentes [(KEARNS,
+1988)](https://www.cis.upenn.edu/~mkearns/papers/boostnote.pdf).
+
+Um algorítmo
+fraco de aprendizagem pode ser definido como modelos ou regras que não possuem
+boa acurácia ou aparentam ser ineficientes, tais como modelos *dummy*: mais
+frequente, estratificado, randômico. Já algorítmos de aprendizagem forte, são
+aqueles que apresentam uma boa taxa de acertos [(FREUND e
+SCHAPIRE)](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=4BF3325D8222B3234BB95971FCAD8759?doi=10.1.1.56.9855&rep=rep1&type=pdf).
+**Exemplo - Corrida de cavalos**[(FREUND e
+SCHAPIRE)](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=4BF3325D8222B3234BB95971FCAD8759?doi=10.1.1.56.9855&rep=rep1&type=pdf):
+Como determinar em qual cavalor apostar, considerando um conjunto de dados
+disponíveis tais como informações do cavalo, do dono, das corridas anteriores e
+etc. Ao perguntar para especialistas cada um deles irá falar coisas distintas e
+ainda assim muito imprecisas (modelos fracos)! Mas seria possível utilizar as
+regras de aposta de cada especialista e gerar uma única regra que seja capaz de
+predizer o cavalor vencedor da corrida utilizando boost 
+    
+## Gradient
+Descent
+
+![](http://matthewemery.ca/images/gradient_descent.gif)
+
+Um algorítmo
+de gradient descendent é uma forma de minimizar o valor de uma função
+interativamente, na qual são dados um conjunto de parametros e ela busca a
+partir daí o menor valor[(TOUSSAINT, 2012)](https://ipvs.informatik.uni-
+stuttgart.de/mlr/marc/notes/gradientDescent.pdf). De forma que:
+\begin{equation}
+y_{min} = F(x_1) > F(x_2) > F(x_3) > ... > F(x_n),\ onde:\
+F(x_n) < precisão
+\end{equation}
+
+Um pseudo algorítmo que pode ser proposto para
+um problema de
+gradient é:
+
 #  XGBoost
 
 XGBoost é um algoritmo que implementa
@@ -379,55 +427,67 @@ processo de criar as árvores pode ser
 paralelizado utilizando todos os núcleos a
 disposição.
 
-## Boosting
-
-A definição de boosting é que até mesmo algorítmos
-fracos de machine larning podem se tornar potentes [(KEARNS,
-1988)](https://www.cis.upenn.edu/~mkearns/papers/boostnote.pdf).
-
-Um algorítmo
-fraco de aprendizagem pode ser definido como modelos ou regras que não possuem
-boa acurácia ou aparentam ser ineficientes, tais como modelos *dummy*: mais
-frequente, estratificado, randômico. Já algorítmos de aprendizagem forte, são
-aqueles que apresentam uma boa taxa de acertos [(FREUND e
-SCHAPIRE)](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=4BF3325D8222B3234BB95971FCAD8759?doi=10.1.1.56.9855&rep=rep1&type=pdf).
-**Exemplo - Corrida de cavalos**[(FREUND e
-SCHAPIRE)](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=4BF3325D8222B3234BB95971FCAD8759?doi=10.1.1.56.9855&rep=rep1&type=pdf):
-Como determinar em qual cavalor apostar, considerando um conjunto de dados
-disponíveis tais como informações do cavalo, do dono, das corridas anteriores e
-etc. Ao perguntar para especialistas cada um deles irá falar coisas distintas e
-ainda assim muito imprecisas (modelos fracos)! Mas seria possível utilizar as
-regras de aposta de cada especialista e gerar uma única regra que seja capaz de
-predizer o cavalor vencedor da corrida utilizando boost 
-    
-## Gradient
-descent
-
-![](http://matthewemery.ca/images/gradient_descent.gif)
-
-Um algorítmo
-de gradient descendent é uma forma de minimizar o valor de uma função
-interativamente, na qual são dados um conjunto de parametros e ela busca a
-partir daí o menor valor[(TOUSSAINT, 2012)](https://ipvs.informatik.uni-
-stuttgart.de/mlr/marc/notes/gradientDescent.pdf). De forma que:
+## Model
+### Objective Function:
 \begin{equation}
-y_{min} = F(x_1) > F(x_2) > F(x_3) > ... > F(x_n),\ onde:\
-F(x_n) < precisão
+\text{obj}(\theta) = L(\theta)
++ \Omega(\theta)
 \end{equation}
 
-Um pseudo algorítmo que pode ser proposto para
-um problema de
-gradient é:
+**L- Training Loss function**: Mede predição do
+modelo na base de treino. (Métrica: *Mean Squared Error*(MSE))   
+**Omega-
+Regularization function **: Controla a complexidade do modelo (Ajuda a evitar o
+*Overfitting*)
 
-    x = inital_value
-    step = 0.01
-    
-    repita
+nota: As *objective functions* devem sempre possuir *training
+loss* e *regularization* 
+
+![](https://raw.githubusercontent.com/dmlc/web-
+data/master/xgboost/model/step_fit.png)
+
+### CART
+Uso de *CARTs* (Classification
+And Regression Trees) no ensemble das árvores
+![](https://raw.githubusercontent.com/dmlc/web-
+data/master/xgboost/model/twocart.png)
+
+
+Modelo de ensemble de árvores IGUAL ao
+modelo Random Forest, mas onde está então a diferença?
+
+## Training
+### Additive
+Training:
+
+Precisamos agora melhorar os paramêtros da função de
+**Regularization**, mas como fazer isso? Fazer isso aqui é muito mais difícil do
+que em problemas de otimização tradicionais, onde você pode usar o gradiente
+para isso. Não é fácil treinar todas as árvores ao mesmo tempo. Em vez disso,
+usamos uma **estratégia aditiva**: consertamos o que aprendemos e adicionamos
+uma nova árvore de cada vez.
+
+
+\begin{split}\hat{y}_i^{(0)} &= 0\\
+\hat{y}_i^{(1)} &= f_1(x_i) = \hat{y}_i^{(0)} + f_1(x_i)\\
+\hat{y}_i^{(2)} &=
+f_1(x_i) + f_2(x_i)= \hat{y}_i^{(1)} + f_2(x_i)\\
+&\dots\\
+\hat{y}_i^{(t)} &=
+\sum_{k=1}^t f_k(x_i)= \hat{y}_i^{(t-1)} + f_t(x_i)
+\end{split}
+
+```python
+x = inital_value
+step = 0.01
+
+repita
 xprev=x
-            x = xperv - step * F(xprev)
-        enquanto abs(x - xprev)
+        x = xperv - step * F(xprev)
+    enquanto abs(x - xprev)
 >
-    precisao
+precisao
+```
 
 ```python
 %%time
@@ -485,20 +545,6 @@ dt_params = [{
 xgb_params = [{
     'max_depth': [4, 5, 6],
     'min_child_weight': [4, 5, 6]
-}]
-
-xgb_add_params = [{
-    'learning_rate': 0.1,
-    'n_estimators': 140,
-    'max_depth': 5,
-    'min_child_weight': 2,
-    'gamma': 0,
-    'subsample': 0.8,
-    'colsample_bytree': 0.8,
-    'objective': 'binary:logistic',
-    'nthread': 8,
-    'scale_pos_weight': 1,
-    'seed': 27
 }]
 ```
 
