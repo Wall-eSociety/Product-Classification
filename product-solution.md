@@ -1,3 +1,36 @@
+# Otto Group Product Classification
+
+Este notebook é uma proposta de solução
+utilizando técnicas de data-mining e machine learn para o problema de
+classificação de produtos da companhia Otto disponíveis em: [Kaggle (challenge):
+Otto group product classification](https://www.kaggle.com/c/otto-group-product-
+classification-challenge)
+
+## Contexto
+
+Retirado da descrição do problema, temos
+que o grupo Otto é uma das maiores companhias de *e-commerce* do mundo, e possui
+s filiais em mais de 20 paises. Vendem milhões de produtos ao redor do mundo
+todos os dias com centezas de produtos sendo adicionados constantemente.
+
+A
+análise de consistência da performance dos produtos deles é crucial, entretando,
+com a infraestrutura de escala global que possuem, produtos identicos são
+classifidados de maneira diferenciada. Entretanto a análise da qualidade dos
+produtos depende fortemente da acurácia na habilidade de agrupar produtos
+semelhantes. Quanto melhor for a classificação, mais intuitivamente eles ter um
+maior alcance com seus produtos.
+
+## Dados
+
+Foram disponibilizados 2 bases de
+dados separadas. A primeira delas contém 61878 registros com rótulo da
+classificação do produto e 144368 de registros sem o rótulo.
+
+São um total de 93
+características na qual não há a descrição do que significa cada uma delas.
+Sendo que não há dados faltando. O range dos dados vão de 0 a 352.
+
 ```python
 # Configure to show multiples outputs from a single cell
 from IPython.core.interactiveshell import InteractiveShell
@@ -27,22 +60,72 @@ df_train.head() # The train dataset
 df_test.head() # It hasn't target
 ```
 
+# Benchmark
+
+A variável results é um acumulador para salvar os resultados na
+base de treino e teste de cada um dos modelos e compará-los ao final.
+
+Segue a
+estrutura:
+
+`
+ 'modelo':
+     'teste': value
+     'treino': value
+`
+
+```python
+from sklearn.model_selection import train_test_split
+
+results = {}
+def add_results(model, train, test):
+    results[model] = {
+        'train': train*100,
+        'test': test*100,
+    }
+```
+
+# Cross Validation
+
+A abordagem para a Validação Cruzada é a utilização do
+método de k-partições. Neste método, o conjunto de dados é dividido em k
+partições [(WITTEN e FRANK,
+2000)](ftp://ftp.ingv.it/pub/manuela.sbarra/Data%20Mining%20Practical%20Machine%20Learning%20Tools%20and%20Techniques%20-%20WEKA.pdf),
+testes extensivos em diversas bases de dados, utilizando diversos algoritmos,
+identificaram o valor de k para identificar a melhor margem de erro como sendo
+10, também de forma randômica. Então, o conjunto de dados de treinamento é
+criado com k – 1 partições, e apenas uma partição é utilizada para testes. São
+realizadas k iterações, aonde cada partição é utilizada uma vez para testes
+enquanto as outras são utilizadas para treinamento. Após todas as partições
+terem sido utilizadas para teste, a margem de erro de cada iteração é somada e a
+média das k iterações se torna a margem de erro do modelo.
+
+![cross
+val](crossval.png)
+<center>Representação do método Cross Validation com k = 10.
+**Fonte**: BABATUNDE et al., 2015.</center>
+
 # Tratamento
 
-Será realizada as etapas de feature selection e feature
+Será realizada as
+etapas de feature selection e feature
 engineering.
 Correlação entre features
-
 Será realizada uma análise da correlação
-entre as features. Visto que há um total de 93 colunas que não foi
-disponibilizada nenhuma informação sobre o que são elas e o que representam e
-portanto, esta análize ajudará a identificar as relações entre as features.
+entre as features. Visto que há um
+total de 93 colunas que não foi
+disponibilizada nenhuma informação sobre o que
+são elas e o que representam e
+portanto, esta análize ajudará a identificar as
+relações entre as features.
 
-##
-Correlação
+## Correlação
 
-A correlação entre duas variáveis é quando existe algum laço
-matemático que envolve o valor de duas variáveis de alguma forma [ESTATÍSTICA II
+
+A correlação entre duas variáveis é
+quando existe algum laço
+matemático que envolve o valor de duas variáveis de
+alguma forma [ESTATÍSTICA II
 - [CORRELAÇÃO E
 REGRESSÃO](http://www.ctec.ufal.br/professor/mgn/05CorrelacaoERegressao.pdf).
 Uma das maneiras mais simples de se identificar a correlação entre duas
@@ -138,21 +221,19 @@ features, entretanto, há 10 colunas que estão fortemente correlacionadas. Pore
 buscamos uma correlação fortíssima para não remover features com comportamentos
 diferentes.
 
-## Train/Test split
+# Train/Test split
 
 Utilizaremos 80% da base de treino para
 efetivamente treinar o modelo e 20% para
 averiguar a performance do modelo.
 
 ```python
-from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler
 
 X = df_train
 y = df_target.categories
-
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 ```
 
@@ -246,17 +327,23 @@ def plot_confusion_matrix(cm, classes,
 ## Modelo Dummy Classifier
 
 Dummy Classifier é um modelo que faz predições
-usando
-regras simples.
+usando regras simples.
 
 O dummy é importante para termos como parâmetro de
-comparação
-com outros modelos.
+comparação com outros modelos.Não pode ser utilizado em problemas reais porque
+ele é apenas para realizar comparações e trabalha com aleatoriedade e frequencia
+de repetições para realizar as predições.
 
-* **Stratified**: realiza predições baseadas na
-distribuição das classes da base de treino. (Ex.: 10% A, 20% B, 50% C, 20% D)
+
+Usamos dois tipos de estratégia:
+
 *
-**Most Frequent**: sempre prediz com a classe mais frequente na base de treino
+**Stratified**: realiza predições baseadas na
+distribuição das classes da base
+de treino. (Ex.: 10% A, 20% B, 50% C, 20% D)
+* **Most Frequent**: sempre prediz
+com a classe mais frequente na base de treino
+
 
 ```python
 from sklearn.dummy import DummyClassifier
@@ -272,9 +359,10 @@ def dummies(X_train, y_train, X_test, y_test):
         cm = confusion_matrix(y_test, y_pred)
 
         plot_confusion_matrix(cm, classes=model)
-
         # Cross validation
         accuracies = cross_val_score(estimator=clf, X=X_train, y=y_train, cv=10)
+        
+        add_results(model, clf.score(X_train, y_train), clf.score(X_test, y_test))
         print(model, 'train dataset score: %.2f' % score)
         print('Média: %.2f' % accuracies.mean())
         print('Desvio padrão: %.4f' % accuracies.std())
@@ -282,26 +370,132 @@ def dummies(X_train, y_train, X_test, y_test):
 dummies(X_train, y_train, X_test, y_test)
 ```
 
-# Gradient Descent
+## Boosting
+
+A definição de boosting é que até mesmo algorítmos
+fracos de
+machine larning podem se tornar potentes [(KEARNS,
+1988)](https://www.cis.upenn.edu/~mkearns/papers/boostnote.pdf).
+
+Um algorítmo
+fraco de aprendizagem pode ser definido como modelos ou regras que não possuem
+boa acurácia ou aparentam ser ineficientes, tais como modelos *dummy*: mais
+frequente, estratificado, randômico. Já algorítmos de aprendizagem forte, são
+aqueles que apresentam uma boa taxa de acertos [(FREUND e
+SCHAPIRE)](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=4BF3325D8222B3234BB95971FCAD8759?doi=10.1.1.56.9855&rep=rep1&type=pdf).
+**Exemplo - Corrida de cavalos**[(FREUND e
+SCHAPIRE)](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=4BF3325D8222B3234BB95971FCAD8759?doi=10.1.1.56.9855&rep=rep1&type=pdf):
+Como determinar em qual cavalor apostar, considerando um conjunto de dados
+disponíveis tais como informações do cavalo, do dono, das corridas anteriores e
+etc. Ao perguntar para especialistas cada um deles irá falar coisas distintas e
+ainda assim muito imprecisas (modelos fracos)! Mas seria possível utilizar as
+regras de aposta de cada especialista e gerar uma única regra que seja capaz de
+predizer o cavalor vencedor da corrida utilizando boost 
+    
+## Gradient
+Descent
 
 ![](http://matthewemery.ca/images/gradient_descent.gif)
 
-##
-XGBoost
 
-### *eXtreme Gradient Boost*
+Um algorítmo
+de gradient descendent é uma forma de minimizar o valor de uma função
+interativamente, na qual são dados um conjunto de parametros e ela busca a
+partir daí o menor valor[(TOUSSAINT, 2012)](https://ipvs.informatik.uni-
+stuttgart.de/mlr/marc/notes/gradientDescent.pdf). De forma que:
+\begin{equation}
+y_{min} = F(x_1) > F(x_2) > F(x_3) > ... > F(x_n),\ onde:\
+F(x_n) < precisão
+\end{equation}
+
+Um pseudo algorítmo que pode ser proposto para
+um problema de
+gradient é:
+
+
+# XGBoost
 
 XGBoost é um algoritmo que implementa
-*gradient boosting* de Decision Trees de
+*gradient boosting* de
+Decision Trees de
 forma rápida e com alta performance.
-**Gradient Boosting** é uma técnica de *machine learning* para problemas de
-regressão e classificação que produz um modelo de predição na forma de
-*ensemble* de modelos de predições fracas, normalmente árvores de decisões.
-Boosting é um processo sequencial, mas como o `XGBoost` consegue implementá-lo
+**Gradient Boosting** é
+uma técnica de *machine learning* para problemas de
+regressão e classificação
+que produz um modelo de predição na forma de
+*ensemble* de modelos de predições
+fracas, normalmente árvores de decisões.
+Boosting é um processo sequencial, mas
+como o `XGBoost` consegue implementá-lo
 de forma paralela?
-Sabemos que cada árvore pode ser produzida apenas depois que
-produzida a árvore anterior, mas o processo de criar as árvores pode ser
-paralelizado utilizando todos os núcleos a disposição.
+Sabemos que cada
+árvore pode ser produzida apenas depois que
+produzida a árvore anterior, mas o
+processo de criar as árvores pode ser
+paralelizado utilizando todos os núcleos a
+disposição.
+
+## Model
+### Objective Function:
+\begin{equation}
+\text{obj}(\theta) = L(\theta)
++ \Omega(\theta)
+\end{equation}
+
+**L- Training Loss function**: Mede predição do
+modelo na base de treino. (Métrica: *Mean Squared Error*(MSE))   
+**Omega-
+Regularization function **: Controla a complexidade do modelo (Ajuda a evitar o
+*Overfitting*)
+
+nota: As *objective functions* devem sempre possuir *training
+loss* e *regularization* 
+
+![](https://raw.githubusercontent.com/dmlc/web-
+data/master/xgboost/model/step_fit.png)
+
+### CART
+Uso de *CARTs* (Classification
+And Regression Trees) no ensemble das árvores
+![](https://raw.githubusercontent.com/dmlc/web-
+data/master/xgboost/model/twocart.png)
+
+
+Modelo de ensemble de árvores IGUAL ao
+modelo Random Forest, mas onde está então a diferença?
+
+## Training
+### Additive
+Training:
+
+Precisamos agora melhorar os paramêtros da função de
+**Regularization**, mas como fazer isso? Fazer isso aqui é muito mais difícil do
+que em problemas de otimização tradicionais, onde você pode usar o gradiente
+para isso. Não é fácil treinar todas as árvores ao mesmo tempo. Em vez disso,
+usamos uma **estratégia aditiva**: consertamos o que aprendemos e adicionamos
+uma nova árvore de cada vez.
+
+
+\begin{split}\hat{y}_i^{(0)} &= 0\\
+\hat{y}_i^{(1)} &= f_1(x_i) = \hat{y}_i^{(0)} + f_1(x_i)\\
+\hat{y}_i^{(2)} &=
+f_1(x_i) + f_2(x_i)= \hat{y}_i^{(1)} + f_2(x_i)\\
+&\dots\\
+\hat{y}_i^{(t)} &=
+\sum_{k=1}^t f_k(x_i)= \hat{y}_i^{(t-1)} + f_t(x_i)
+\end{split}
+
+```python
+x = inital_value
+step = 0.01
+
+repita
+xprev=x
+        x = xperv - step * F(xprev)
+    enquanto abs(x - xprev)
+>
+precisao
+```
 
 ```python
 %%time
@@ -319,19 +513,27 @@ def xgboost(X_train, y_train, X_test, y_test):
         nthread=8,
         scale_pos_weight=1
         )
-
+    print('XGBoost fit')
     xgbclf.fit(X_train, y_train)
+    print('XGBoost train score')
     train_score = xgbclf.score(X_train, y_train)
+    print('XGBoost test score')
     y_pred = xgbclf.predict(X_test)
 
+    print('XGBoost confusion matrix')
     cm = confusion_matrix(y_test, y_pred)
 
-    plot_confusion_matrix(cm, classes=xgbclf)
-
+    print('XGBoost cross validation')
     accuracies = cross_val_score(estimator=xgbclf, X=X_train, y=y_train, cv=10)
+    
+    print('XGBoost results')
+    add_results('xgboost', xgbclf.score(X_train, y_train), xgbclf.score(X_test, y_test))
+    
+    plot_confusion_matrix(cm, classes=xgbclf)
     print('Resultado na base de treino %.2f' % train_score)
     print('Resultado Médio na base de teste: %.2f' % accuracies.mean())
     print('Desvio padrão: %.4f' % accuracies.std())
+    
 
 xgboost(X_train, y_train, X_test, y_test)
 ```
@@ -351,20 +553,6 @@ dt_params = [{
 xgb_params = [{
     'max_depth': [4, 5, 6],
     'min_child_weight': [4, 5, 6]
-}]
-
-xgb_add_params = [{
-    'learning_rate': 0.1,
-    'n_estimators': 140,
-    'max_depth': 5,
-    'min_child_weight': 2,
-    'gamma': 0,
-    'subsample': 0.8,
-    'colsample_bytree': 0.8,
-    'objective': 'binary:logistic',
-    'nthread': 8,
-    'scale_pos_weight': 1,
-    'seed': 27
 }]
 ```
 
@@ -403,21 +591,97 @@ search_params(DecisionTreeClassifier, dt_params)
 
 ## Decision Tree
 
-### Adicionar descrição de como funciona!!!!
+Os dados são separados recursivamente formando uma árvore de
+decisão baseada nas
+features.Pode-se definir uma árvore de decisão, conforme diz
+(MITCHELL, 1997),
+como um método para aproximar valores discretos em funções,
+onde a função de
+aprendizagem é representada por uma árvore de decisão. Tais
+árvores aprendidas
+podem ser representadas - a nível de código fonte - como
+conjuntos de estruturas
+condicionais "se-então" para melhorar a leitura e
+entendimento humano, de acordo
+com (MITCHELL, 1997).
+
+Estes algoritmos são muito
+utilizados, segundo (MITCHELL, 1997), na área de
+algoritmos de inferência
+indutiva, e dentre as aplicações de tais algoritmos,
+tem-se máquinas que
+aprenderam a diagnosticar casos da medicina, ou ainda, para
+avaliar o risco de
+inadimplência dos requerentes de créditos em bancos.
+
+Para visualizar de forma
+mais fácil a representação de uma árvore, a figura 3,
+representada abaixo,
+caracteriza uma árvore de decisão em que a máquina deve
+decidir com base nas
+variáveis do tempo (ensolarado, nublado ou chuvoso), se
+pode ou não ocorrer uma
+partida de tênis. Além das variáveis de tempo, tem-se
+outras variáveis que podem
+ser levadas em conta dependendo da condição climática local, como umidade (alta
+ou normal) e o vento (forte ou fraco).
+
+![Workflow Random
+forest](arvore_jogo_tenis.png)
+
+O algoritmo de árvores de decisão classifica
+instâncias ou dados, ordenando-os
+apartir da raiz da árvore, para os nós de suas
+folhas. Cada nó da árvore
+exemplifica uma pergunta (teste) de alguns - atributos
+- de instância, e cada
+ramo descendente de um nó corresponde para um dos
+possíveis valores de tal
+atributo (MITCHELL, 1997). Vale a pena citar: O
+algoritmo ID3 (QUINLAN, 1986)
+aprende sobre árvores de decisão construindo-as de
+cima para baixo (nó raiz para
+as ramificações) tentando buscar respostas para a
+pergunta "Qual atributo
+devemos testar na raiz da árvore?", sendo assim, cada
+atributo instanciado é
+calculado por meio de testes estatísticos, para
+determinar o quão bem (ótimo)
+tal atributo, isolado dos demais, classifica os
+exemplos de treinamento.
+
+Quando o melhor atributo é selecionado e utilizado
+como teste no nó principal da
+árvore, cria-se um descendente para cada valor
+admissível deste atributo e os
+exemplos de treinamento são sorteados para o nó
+filho mais apropriado. O
+processo inteiro é então repetido utilizando
+treinamentos associados a cada
+descendente para selecionar o melhor atributo
+para testar na árvore. Quando
+realizado dessa forma, o algoritmo tenta de forma
+“gulosa“3.4. O modelo 49
+Figura 3 – Exemplo de árvore de decisão, sobre
+condições para realização de um
+jogo de
+tênis.
 
 ```python
 from sklearn.model_selection import cross_val_score
 
-def fit_tree(X, Y):
-    tree_classifier = DecisionTreeClassifier(max_features=70, min_samples_leaf=10, max_depth=40)
-    tree_classifier.fit(X, Y)
+def fit_tree(X_train, y_train, X_test, y_test, tree_description='decision_tree'):
+    tree_clf = DecisionTreeClassifier(max_features=70, min_samples_leaf=10, max_depth=40)
+    tree_clf.fit(X_train, y_train)
 
-    inner_score = tree_classifier.score(X, Y)
-    tree_fit = cross_val_score(tree_classifier, X, Y)
-
+    inner_score = tree_clf.score(X_train, y_train)
+    tree_fit = cross_val_score(tree_clf, X_train, y_train)
+    
+    add_results(tree_description, tree_clf.score(X_train, y_train), tree_clf.score(X_test, y_test))
+    
     return inner_score, tree_fit.mean(), tree_fit.std()
 
-"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(X_train, y_train))
+"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(X_train, y_train, X_test, y_test))
 ```
 
 ## Distribuição dos dados
@@ -469,7 +733,8 @@ rodou-se novamene o algorítmo da decision tree e percebeu-se que a acurácia do
 modelo diminuiu, e portanto, não será utilizado.
 
 ```python
-"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(df_rtrain, df_rtarget.target))
+X_tr, X_te, y_tr, y_te = train_test_split(df_rtrain, df_rtarget.target, test_size=0.2)
+"inner: {:.2f} cross: {:.2f} +/- {:.2f}".format(*fit_tree(X_tr, y_tr, X_te, y_te))
 ```
 
 # Random Forest
@@ -496,23 +761,39 @@ Overfitting que as Árvores de decisão apresentam. Tudo depende
 do quanto as DT
 contidas dentro da Random Forest. Isto é, o quanto elas
 representam os dados.
-Referências:
-[BREIMAN](https://www.stat.berkeley.edu/users/breiman/randomforest2001.pdf),
-Leo. Random forests. Machine learning, v. 45, n. 1, p. 5-32, 2001.
-
 ##
 Utilizando o algoritmo
 
 ```python
+### %%time
+
 from sklearn.ensemble import RandomForestClassifier
-rfclf = RandomForestClassifier(n_estimators=10, max_features=70, min_samples_leaf=10, max_depth=40)
-rfclf = rfclf.fit(X_train, y_train)
 
-train_score = rfclf.score(X_train, y_train)
-test_score = cross_val_score(rfclf, X_train, y_train)
+def test_random(params, X_train, y_train, X_test, y_test, name='random_forest'):
+    rfclf = RandomForestClassifier(**params)
+    rfclf = rfclf.fit(X_train, y_train)
+    
+    train_score = rfclf.score(X_train, y_train)
+    test_score = rfclf.score(X_test, y_test)
 
-train_score
-test_score
+    add_results(name, train_score, test_score)
+    return name, train_score, test_score
+params = {'n_estimators': 10, 'max_features': 70, 'min_samples_leaf': 10, 'max_depth': 40}
+test_random({}, X_train, y_train, X_test, y_test)
+test_random(params, X_train, y_train, X_test, y_test, 'random_forest_otimized')
+```
+
+## Verificando com Cross Validation
+
+Cross validation irá predizer um pedaço do
+dataset utilizando o modelo treinado
+com o resto dos dados que não fazem parte
+deste dataset.
+
+```python
+rfscores = cross_val_score(rfclf, X_train, y_train)
+print ("{} de precisão".format(rfscores.mean() * 100))
+
 ```
 
 ## Importancia das features para a RF
@@ -593,65 +874,32 @@ plot = axis.set_ylabel('importance')
 plt.show()
 ```
 
-## Verificando a acurácia com os dados de treinamento
-
-Utilizando os dados que
-foram utilizados parar treinar o algoritmo como entrada
-para predição nos dá
-noção se o modelo pode estar viciado.
-
-```python
-print ("{} de precisão".format(rfclf.score(X_train, y_train) * 100))
-```
-
-## Verificando com Cross Validation
-
-Cross validation irá predizer um pedaço do
-dataset utilizando o modelo treinado
-com o resto dos dados que não fazem parte
-deste dataset.
-
-```python
-rfscores = cross_val_score(rfclf, X_train, y_train)
-print ("{} de precisão".format(rfscores.mean() * 100))
-
-```
-
 ## ExtraTrees
 
 O [Scikit Learn](http://scikit-
 learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html)
 nos apresenta um tipo diferente de random forest que pode apresentar resultados
 melhores que o [RandomForestClassifier](http://scikit-
-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
+learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html).
+Assim como afirma que as extra tree devem ser utilizadas apenas em algorítmos de
+montagem Como o Extra Trees Classifier e Regressor.
 
+O que diferencia uma extra
+tree de uma decision tree é a forma que é feita a construção da árvore. Enquanto
+uma decision tree utiliza cópia dos dados e sub amostras para realizar as
+divisões de cada nó. Uma extra tree utiliza um ponto de divisão randomico e
+utiliza toda a base de treino para crescer a árvore [(GEURTS, ERNST e WEHENKEL,
+2005)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.65.7485&rep=rep1&type=pdf).
 ```python
 from sklearn.ensemble import ExtraTreesClassifier
 
-etc = ExtraTreesClassifier();
-etscores = cross_val_score(rfclf, X_train, y_train)
-extra_tree_fit = etc.fit(X_train, y_train)
+etc = ExtraTreesClassifier()
+etscores = cross_val_score(etc, X_train, y_train)
 print ("{} de precisão".format((etscores.mean() * 100)))
-print(extra_tree_fit.score(X_train, y_train))
-```
 
-## Boosting Trees
-
-Este algorítmo demora demais para rodar, descomente se tiver
-a paciencia de
-esperar.
-Estimativa: 10 min com I7 3.1  8Ram
-
-```python
-#from sklearn.ensemble import GradientBoostingClassifier
-
-#gbc = GradientBoostingClassifier();
-#gbcscores = cross_val_score(gbc, df_train, y)
-```
-
-```python
-#print (gbcscores.mean() * 100, end='')
-#print ("%")
+etc = etc.fit(X_train, y_train)
+add_results('extra_trees', etc.score(X_train, y_train), etc.score(X_test, y_test))
+print("Inner score", etc.score(X_train, y_train))
 ```
 
 ## Neurônio Artificial
@@ -659,8 +907,7 @@ Estimativa: 10 min com I7 3.1  8Ram
 ![Workflow NeuralNetwork](neural.jpg)
 
 #### Entrada
--
-Sinais de entrada {x1,x2,...,xn}.
+- Sinais de entrada {x1,x2,...,xn}.
 - Cada sinal de entrada e ponderado por 1
 peso.{w1,w2,...,wn}.
 - O peso é adquirido a partir do treino.
@@ -668,6 +915,7 @@ peso.{w1,w2,...,wn}.
 #### Função
 agregadora
 - Recebe todos os sinais e realiza a soma dos produtos dos sinais.
+
 #### Neurônio
 - Tem a função de deixar, passar ou inibir um sinal de saida de
 acordo com a entrada.
@@ -689,6 +937,8 @@ usado para fazer o
 treinamento de modelos, e é uma biblioteca do Scikit-Learn.
 
 ```python
+%%time
+
 from sklearn.neural_network import MLPClassifier
 
 mlp = MLPClassifier()
@@ -699,8 +949,13 @@ scoreTeste =  mlp.score(X_test, y_test)
 
 print('Score treino: ', scoreTreino)
 print('Score teste: ', scoreTeste)
-```
 
+mlpscores = cross_val_score(mlp, X_train, y_train)
+
+print('Score: {} +/- {}'.format(mlpscores.mean(), mlpscores.std()))
+
+add_results('multi_layer_perceptron', scoreTreino, mlp.score(scoreTeste))
+```
 ```python
 from sklearn.neural_network import MLPClassifier
 
@@ -712,8 +967,48 @@ plot_confusion_matrix(mp, classes=model)
 print(div,classification_report(y_test,saidas))
 ```
 
+# Conclusão
+
+Como conclusão, tivemos a utilização do modelo Random Forest e
+Extreme Gradient Boosting otimizados. Mas o gráfico a seguir irá mostrar os
+resultados com a base de treino e base de teste.
+
+```python
+columns = [x.replace('_',' ') for x in results.keys()]
+train = []
+test = []
+width=0.4
+base = np.arange(len(columns))
+for key in results:
+    train.append(results[key]['train'])
+    test.append(results[key]['test'])
+fig, ax=plt.subplots(figsize=[10,10])
+fig = ax.bar(base, train, width)
+fig = ax.bar(base+width, test, width)
+fig = ax.set_xticks(base+width/2)
+fig = ax.set_xticklabels(columns, rotation='45')
+fig = ax.legend(['Base de treino', 'Base de teste'])
+plt.show()
+```
+
 # Referências Bibliográficas
 http://scikit-
 learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier
 https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-
 xgboost-with-codes-python/
+
+[MITCHELL](https://dl.acm.org/citation.cfm?id=505283), Tom M. Machine learning.
+1997. Burr Ridge, IL: McGraw Hill, v. 45, n. 37, p. 870-877, 1997.
+[QUINLAN](http://hunch.net/~coms-4771/quinlan.pdf), J.. Ross . Induction of
+decision trees. Machine learning, v. 1, n. 1, p. 81-106, 1986.
+[BREIMAN](https://www.stat.berkeley.edu/users/breiman/randomforest2001.pdf),
+Leo. Random forests. Machine learning, v. 45, n. 1, p. 5-32, 2001.
+
+BABATUNDE,
+Oluleye, ARMSTRONG, Leisa, DIEPEVEEN,
+Dean e LENG, J. Comparative analysis of
+Genetic Algorithm and Particle Swam
+Optimization: An application in precision
+agriculture. 2015. **Asian Journal of
+Computer and Information Systems**. 3.
+1-12.
