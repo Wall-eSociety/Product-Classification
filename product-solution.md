@@ -954,7 +954,7 @@ mlpscores = cross_val_score(mlp, X_train, y_train)
 
 print('Score: {} +/- {}'.format(mlpscores.mean(), mlpscores.std()))
 
-add_results('multi_layer_perceptron', scoreTreino, mlp.score(scoreTeste))
+add_results('multi_layer_perceptron', scoreTreino, scoreTeste)
 ```
 ```python
 from sklearn.neural_network import MLPClassifier
